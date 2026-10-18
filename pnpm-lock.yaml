@@ -9,6 +9,9 @@ catalogs:
     typescript:
       specifier: 6.0.3
       version: 6.0.3
+    zod:
+      specifier: ^4.6.7
+      version: 4.6.7
 
 importers:
 
@@ -26,6 +29,22 @@ importers:
       turbo:
         specifier: ^2.11.8
         version: 2.11.8
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
+  packages/contracts:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@repo/oxc-config':
+        specifier: workspace:*
+        version: link:../oxc-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -359,6 +378,9 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
+  zod@4.6.7:
+    resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
+
 snapshots:
 
   '@oxfmt/binding-android-arm-eabi@0.73.0':
@@ -551,3 +573,5 @@ snapshots:
       '@turbo/windows-arm64': 2.11.8
 
   typescript@6.0.3: {}
+
+  zod@4.6.7: {}
