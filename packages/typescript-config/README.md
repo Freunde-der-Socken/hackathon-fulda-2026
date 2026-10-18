@@ -2,11 +2,11 @@
 
 Shared `tsconfig` presets. Extend one of them from a package's `tsconfig.json`:
 
-| Preset | Use for | Adds on top of `base.json` |
-| --- | --- | --- |
-| `base.json` | Runtime-agnostic packages (e.g. `@repo/contracts`) | – |
-| `node.json` | `apps/api` and Node scripts | `types: ["node"]` |
-| `vue.json` | `apps/web` | DOM libs, Vue JSX, `types: ["vite/client"]` |
+| Preset      | Use for                                            | Adds on top of `base.json`                  |
+| ----------- | -------------------------------------------------- | ------------------------------------------- |
+| `base.json` | Runtime-agnostic packages (e.g. `@repo/contracts`) | –                                           |
+| `node.json` | `apps/api` and Node scripts                        | `types: ["node"]`                           |
+| `vue.json`  | `apps/web`                                         | DOM libs, Vue JSX, `types: ["vite/client"]` |
 
 ```json
 {
