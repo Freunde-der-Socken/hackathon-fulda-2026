@@ -8,7 +8,13 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "infra:up": "docker compose up -d --wait",
+    "infra:down": "docker compose down",
+    "infra:reset": "docker compose down -v",
+    "infra:logs": "docker compose logs -f",
+    "db:up": "docker compose up -d --wait postgres",
+    "mqtt:up": "docker compose up -d --wait mosquitto"
   },
   "devDependencies": {
     "@repo/oxc-config": "workspace:*",

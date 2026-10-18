@@ -1,0 +1,37 @@
+name: hackathon-fulda
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+    ports: ['${POSTGRES_PORT:-5432}:5432']
+    volumes:
+      # Postgres 18 keeps its data in a versioned subfolder, so mount the parent, not .../data
+      - postgres-data:/var/lib/postgresql
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    ports:
+      - '${MQTT_PORT:-1883}:1883' # MQTT (API, devices)
+      - '${MQTT_WS_PORT:-9001}:9001' # MQTT over WebSockets (browser)
+    volumes:
+      - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto-data:/mosquitto/data
+    healthcheck:
+      test: ['CMD', 'mosquitto_sub', '-t', '$$SYS/#', '-C', '1', '-i', 'healthcheck', '-W', '3']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+  mosquitto-data:
