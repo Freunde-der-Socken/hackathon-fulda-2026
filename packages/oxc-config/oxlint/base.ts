@@ -11,7 +11,7 @@ export default defineConfig({
   env: { es2024: true },
   rules: {
     'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
-    'eqeqeq': ['error', 'smart'],
+    eqeqeq: ['error', 'smart'],
     'no-console': 'warn',
     'typescript/no-explicit-any': 'warn',
     'typescript/consistent-type-imports': 'error',
