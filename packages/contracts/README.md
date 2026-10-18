@@ -1,25 +1,25 @@
 # @repo/contracts
 
-Every request, response and message schema shared by `apps/web` and `apps/api`, as Zod schemas plus inferred types. Both apps import the TypeScript source directly; there is no build step.
+Zod schemas and inferred types shared by `apps/web` and `apps/api`, imported as TypeScript source (no build step).
+
+| File          | Contains                                                                         |
+| ------------- | -------------------------------------------------------------------------------- |
+| `common.ts`   | `Id`, `Timestamp`, `IdParams`, `PaginationQuery`, `Paginated()`, `ErrorResponse` |
+| `health.ts`   | `HealthResponse`                                                                 |
+| `example.ts`  | `Item` CRUD set to copy; delete once the first real domain exists                |
+| `<domain>.ts` | One file per feature area, re-exported from `index.ts`                           |
 
 ```ts
-import { CreateItemBody, ErrorResponse, HealthResponse } from '@repo/contracts';
+export const Todo = z.object({ id: Id, title: z.string(), createdAt: Timestamp });
+export type Todo = z.infer<typeof Todo>;
+export const CreateTodoBody = Todo.omit({ id: true, createdAt: true });
+export type CreateTodoBody = z.infer<typeof CreateTodoBody>;
 ```
-
-## Layout
-
-- `src/common.ts`: `Id`, `Timestamp`, `IdParams`, `PaginationQuery`, `Paginated()`, `ErrorResponse`
-- `src/health.ts`: `HealthResponse`
-- `src/<domain>.ts`: one file per feature area, re-exported from `src/index.ts`
-- `src/example.ts`: the `Item` CRUD set to copy. Delete it once the first real domain exists.
 
 ## Conventions
 
-- **Schema and type share a name**: `export const Todo = z.object(...)` and `export type Todo = z.infer<typeof Todo>`.
-- **One schema per endpoint part**: `TodoParams`, `ListTodosQuery`, `CreateTodoBody`, `UpdateTodoBody`, `TodoResponse`.
-- **Derive, don't duplicate**: `CreateTodoBody = Todo.omit({ id: true, createdAt: true })`, `UpdateTodoBody = CreateTodoBody.partial()`.
-- **Dates are ISO strings** (`Timestamp`, i.e. `z.iso.datetime()`), because JSON has no `Date`. Convert at the edges.
-- **Query strings are text**: use `z.coerce.number()` / `z.stringbool()` for non-string query params.
-- **Errors**: the API answers every 4xx / 5xx with `ErrorResponse` (`{ statusCode, error, message, issues? }`), and the web API wrapper parses it to show a toast.
-- **Zod is the only dependency, and nothing is imported from apps**, so the package loads in both the browser and Node.
-- **Relative imports have no extension** (`./common`), as the `@repo/typescript-config` presets expect.
+- **Schema and type share a name.** Name endpoint schemas `TodoParams`, `ListTodosQuery`, `CreateTodoBody`, `UpdateTodoBody`, `TodoResponse`.
+- **Derive, don't duplicate**, with `.omit()`, `.partial()`, `.extend()`.
+- **Dates are ISO strings** (`Timestamp`), since JSON has no `Date`.
+- **Every API error is an `ErrorResponse`**, which the web API wrapper parses for its toast.
+- **Only Zod, no imports from apps**, so the package runs in the browser and in Node.
