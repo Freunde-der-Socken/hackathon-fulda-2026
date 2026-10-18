@@ -1,4 +1,14 @@
-# Turborepo starter
+# hackathon-fulda-2026
+
+## Toolchain
+
+- **Node 24** (see `.nvmrc`). `pnpm install` fails on older versions (`engineStrict`).
+- **pnpm 11.25.0**: install it with `npm i -g pnpm@11.25.0`. Corepack is no longer bundled with newer Node versions.
+- **Shared dependency versions** (`zod`, `typescript`, `@types/node`) live in the `catalog` of `pnpm-workspace.yaml`. Reference them as `"catalog:"` in a package's `package.json` instead of a version range.
+- **TypeScript is pinned to 6.x, not 7.** `vue-tsc` 3.x crashes on TypeScript 7 because it loads `typescript/lib/tsc`, which the native TS 7 package no longer ships. Revisit once Vue's tooling supports TS 7.
+- **tsconfig presets** come from `@repo/typescript-config` (`base.json`, `node.json`, `vue.json`). See [its README](packages/typescript-config/README.md).
+
+> The rest of this file is the Turborepo starter README and will be replaced in #11.
 
 This Turborepo starter is maintained by the Turborepo core team.
 
