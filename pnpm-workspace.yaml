@@ -1,6 +1,6 @@
 packages:
-  - "apps/*"
-  - "packages/*"
+  - 'apps/*'
+  - 'packages/*'
 
 # Fail `pnpm install` on a Node version outside `engines` instead of only warning
 engineStrict: true
@@ -10,4 +10,4 @@ catalog:
   zod: ^4.6.7
   # vue-tsc does not support TypeScript 7 yet (it needs typescript/lib/tsc), so stay on 6.x
   typescript: 6.0.3
-  "@types/node": ^24.0.0
+  '@types/node': ^24.0.0

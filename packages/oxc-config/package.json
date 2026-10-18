@@ -1,0 +1,21 @@
+{
+  "name": "@repo/oxc-config",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    "./oxlint/base": "./oxlint/base.ts",
+    "./oxlint/vue": "./oxlint/vue.ts",
+    "./oxlint/node": "./oxlint/node.ts",
+    "./oxfmt": "./oxfmt.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
+  },
+  "peerDependencies": {
+    "oxfmt": "*",
+    "oxlint": "*"
+  }
+}
