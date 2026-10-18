@@ -1,17 +1,22 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "globalDependencies": [".nvmrc", "pnpm-workspace.yaml"],
   "tasks": {
+    "transit": {
+      "dependsOn": ["^transit"]
+    },
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**"]
+      "outputs": ["dist/**"],
+      "env": ["VITE_*"]
+    },
+    "typecheck": {
+      "dependsOn": ["transit"]
     },
     "lint": {
-      "dependsOn": ["^lint"]
-    },
-    "check-types": {
-      "dependsOn": ["^check-types"]
+      "dependsOn": ["transit"]
     },
     "dev": {
       "cache": false,
