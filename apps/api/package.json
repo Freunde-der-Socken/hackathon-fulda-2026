@@ -15,7 +15,8 @@
     "db:migrate": "node --env-file-if-exists=../../.env --env-file-if-exists=.env node_modules/drizzle-kit/bin.cjs migrate",
     "db:push": "node --env-file-if-exists=../../.env --env-file-if-exists=.env node_modules/drizzle-kit/bin.cjs push",
     "db:studio": "node --env-file-if-exists=../../.env --env-file-if-exists=.env node_modules/drizzle-kit/bin.cjs studio",
-    "db:seed": "tsx --env-file-if-exists=../../.env --env-file-if-exists=.env src/db/seed.ts"
+    "db:seed": "tsx --env-file-if-exists=../../.env --env-file-if-exists=.env src/db/seed.ts",
+    "mqtt:simulate": "tsx --env-file-if-exists=../../.env --env-file-if-exists=.env scripts/simulate.ts"
   },
   "dependencies": {
     "@fastify/cors": "^11.3.1",
@@ -27,6 +28,7 @@
     "fastify": "^5.12.7",
     "fastify-plugin": "^6.0.1",
     "fastify-type-provider-zod": "^7.0.0",
+    "mqtt": "^5.16.1",
     "postgres": "^3.4.9",
     "zod": "catalog:"
   },

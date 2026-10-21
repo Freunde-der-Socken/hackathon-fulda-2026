@@ -2,11 +2,12 @@
 
 Zod schemas and inferred types shared by `apps/web` and `apps/api`, imported as TypeScript source (no build step).
 
-| File          | Contains                                                                         |
-| ------------- | -------------------------------------------------------------------------------- |
-| `common.ts`   | `Id`, `Timestamp`, `IdParams`, `PaginationQuery`, `Paginated()`, `ErrorResponse` |
-| `health.ts`   | `HealthResponse`                                                                 |
-| `<domain>.ts` | One file per feature area, re-exported from `index.ts`                           |
+| File          | Contains                                                                                        |
+| ------------- | ----------------------------------------------------------------------------------------------- |
+| `common.ts`   | `Id`, `Timestamp`, `IdParams`, `PaginationQuery`, `Paginated()`, `ErrorResponse`                |
+| `health.ts`   | `HealthResponse`                                                                                |
+| `mqtt/`       | MQTT `topics` (pattern to payload schema), `SensorReading` example, `buildTopic` / `matchTopic` |
+| `<domain>.ts` | One file per feature area, re-exported from `index.ts`                                          |
 
 ```ts
 export const Todo = z.object({ id: Id, title: z.string(), createdAt: Timestamp });
