@@ -11,3 +11,7 @@ catalog:
   # vue-tsc does not support TypeScript 7 yet (it needs typescript/lib/tsc), so stay on 6.x
   typescript: 6.0.3
   '@types/node': ^24.0.0
+
+# Install scripts pnpm 11 may run; `pnpm install` fails on any dependency not listed here
+allowBuilds:
+  esbuild: true
