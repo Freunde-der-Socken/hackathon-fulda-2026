@@ -6,7 +6,6 @@ Zod schemas and inferred types shared by `apps/web` and `apps/api`, imported as 
 | ------------- | -------------------------------------------------------------------------------- |
 | `common.ts`   | `Id`, `Timestamp`, `IdParams`, `PaginationQuery`, `Paginated()`, `ErrorResponse` |
 | `health.ts`   | `HealthResponse`                                                                 |
-| `example.ts`  | `Item` CRUD set to copy; delete once the first real domain exists                |
 | `<domain>.ts` | One file per feature area, re-exported from `index.ts`                           |
 
 ```ts
