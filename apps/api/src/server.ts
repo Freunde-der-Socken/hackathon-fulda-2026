@@ -20,7 +20,7 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
 }
 
 try {
-  await app.listen({ host: env.HOST, port: env.PORT });
+  await app.listen({ host: env.HOST, port: env.API_PORT });
 } catch (err) {
   app.log.error({ err }, 'Failed to start');
   process.exit(1);

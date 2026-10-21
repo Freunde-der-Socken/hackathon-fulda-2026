@@ -12,11 +12,11 @@ Prerequisites: Docker Desktop or Docker Engine, and VS Code with the [Dev Contai
 
 Postgres and Mosquitto start with the container. Inside it they are reached by service name (`DATABASE_URL` and `MQTT_URL` are preset), and `docker compose ps` works from the container terminal. If a host port is already taken, set another one:
 
-| Service             | Where                                               | Variable                                     |
-| ------------------- | --------------------------------------------------- | -------------------------------------------- |
-| Postgres, Mosquitto | root `.env` (see [`.env.example`](.env.example))    | `POSTGRES_PORT`, `MQTT_PORT`, `MQTT_WS_PORT` |
-| Web                 | `apps/web/.env` (see its `.env.example`)            | `WEB_PORT`                                   |
-| API                 | `apps/api/.env` and `apps/web/.env` (for the proxy) | `PORT`, and `API_PORT` in the web app        |
+| Service             | Where                                            | Variable                                     |
+| ------------------- | ------------------------------------------------ | -------------------------------------------- |
+| Postgres, Mosquitto | root `.env` (see [`.env.example`](.env.example)) | `POSTGRES_PORT`, `MQTT_PORT`, `MQTT_WS_PORT` |
+| Web                 | `apps/web/.env` (see its `.env.example`)         | `WEB_PORT`                                   |
+| API                 | root `.env` (also used by the web dev proxy)     | `API_PORT`                                   |
 
 Inside the container the services always use their default ports. Only the ports published on your machine change.
 

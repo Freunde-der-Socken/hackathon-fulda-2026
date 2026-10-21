@@ -4,8 +4,10 @@ import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
 
 export default defineConfig(({ mode }) => {
-  // Empty prefix: load WEB_PORT / API_PORT too, which are not exposed to the browser
-  const env = loadEnv(mode, process.cwd(), '');
+  // Empty prefix: load WEB_PORT / API_PORT too, which are not exposed to the browser.
+  // API_PORT is shared with the API through the root .env, and apps/web/.env wins on conflicts.
+  const rootDir = fileURLToPath(new URL('../..', import.meta.url));
+  const env = { ...loadEnv(mode, rootDir, ''), ...loadEnv(mode, process.cwd(), '') };
   return {
     plugins: [vue(), tailwindcss()],
     resolve: {
