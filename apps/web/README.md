@@ -44,14 +44,3 @@ The config is in `components.json`. Check the result after adding a component:
 - The CLI may add new theme tokens to `src/style.css`. Keep them.
 
 Then run `pnpm fmt` from the repo root, since the CLI writes double quotes.
-
-## Live MQTT messages
-
-`useLiveTopic(topicKey)` in `src/composables/` streams the messages of one topic from the API (`GET /api/events`, Server-Sent Events). The topics and payload types come from `@repo/contracts`, and invalid messages are dropped (and counted in `dropped`):
-
-```ts
-const { latest, messages, connected, dropped } = useLiveTopic('sensorReading', { max: 20 });
-// latest: the newest payload, messages: newest first, both typed as SensorReading
-```
-
-The API needs `MQTT_URL` for this. Start the broker with `pnpm mqtt:up` and fake data with `pnpm mqtt:simulate`.

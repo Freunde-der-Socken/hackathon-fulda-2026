@@ -15,8 +15,7 @@
     "infra:logs": "docker compose logs -f",
     "db:up": "docker compose up -d --wait postgres",
     "mqtt:up": "docker compose up -d --wait mosquitto",
-    "db:migrate": "pnpm --filter @repo/api db:migrate",
-    "mqtt:simulate": "pnpm --filter @repo/api mqtt:simulate"
+    "db:migrate": "pnpm --filter @repo/api db:migrate"
   },
   "devDependencies": {
     "@repo/oxc-config": "workspace:*",

@@ -26,14 +26,7 @@ For quick experiments `pnpm --filter @repo/api db:push` syncs the schema without
 
 ## MQTT (optional)
 
-Without `MQTT_URL` the API starts, logs a warning, reports `mqtt: "disabled"` on `GET /api/health`, and `GET /api/events` doesn't exist. Otherwise `app.mqtt` gives typed, validated access to the broker (Mosquitto from `compose.yaml`).
-
-```sh
-pnpm mqtt:up         # broker
-pnpm dev
-pnpm mqtt:simulate   # fake readings every second
-curl -N localhost:3000/api/events   # the live stream
-```
+Without `MQTT_URL` the API starts, logs a warning and reports `mqtt: "disabled"` on `GET /api/health`. Otherwise `app.mqtt` gives typed, validated access to the broker (Mosquitto from `compose.yaml`, start it with `pnpm mqtt:up`).
 
 Topics and payloads are defined only in `packages/contracts/src/mqtt/index.ts`:
 
@@ -43,7 +36,7 @@ export const topics = {
 } as const;
 ```
 
-Convention: `<domain>/<id>/<event>`, lowercase, no leading slash. `+` is the only wildcard, and its values are the `params`.
+Convention: `<domain>/<id>/<event>`, lowercase, no leading slash. `+` is the only wildcard, and its values are the `params`. `SensorReading` is an example: replace it with the project's own topics.
 
 ```ts
 // Throws (ZodError) before anything reaches the broker if the payload is invalid
@@ -60,8 +53,4 @@ const unsubscribe = await app.mqtt.subscribe('sensorReading', ({ payload, params
 });
 ```
 
-### Messages in the browser: Server-Sent Events
-
-`GET /api/events` streams every valid message as `event: <topicKey>` with `data: { topic, params, payload }`. The browser only talks to the API, it works through the Vite proxy, and the broker stays private (no WebSocket port or auth to expose). In the web app use the `useLiveTopic` composable (see `apps/web/README.md`).
-
-To add a topic, add it to `topics` in the contracts. The plugin, the simulator and `/api/events` pick it up from there (the simulator only publishes `sensorReading`, so extend `apps/api/scripts/simulate.ts` too).
+Getting messages to the browser is not set up yet. The plan (issue #9) is Server-Sent Events from the API: a route that subscribes with `app.mqtt.subscribe` and streams the messages, so the broker stays private. Remember to end open streams in a `preClose` hook, otherwise `app.close()` waits for them forever.
