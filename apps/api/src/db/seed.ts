@@ -9,16 +9,11 @@ if (!env.DATABASE_URL) {
 }
 
 const client = postgres(env.DATABASE_URL, { max: 1 });
-const db = drizzle(client, { schema, casing: 'snake_case' });
+export const db = drizzle(client, { schema, casing: 'snake_case' });
 
-// Fixed ids plus onConflictDoNothing keep the seed idempotent: run it as often as you like
-await db
-  .insert(schema.items)
-  .values([
-    { id: '00000000-0000-4000-8000-000000000001', name: 'First example item' },
-    { id: '00000000-0000-4000-8000-000000000002', name: 'Second example item', done: true },
-  ])
-  .onConflictDoNothing();
+// Keep the seed idempotent so it can run as often as you like: use fixed ids plus
+// `.onConflictDoNothing()`, e.g.
+//   await db.insert(schema.todos).values({ id: '…', title: 'First' }).onConflictDoNothing();
 
 await client.end();
-process.stdout.write('Seeded items.\n');
+process.stdout.write('Nothing to seed yet.\n');
