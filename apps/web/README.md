@@ -39,7 +39,7 @@ pnpm dlx shadcn-vue@latest add <component>
 
 The config is in `components.json`. Check the result after adding a component:
 
-- It must import `cn` from `@/lib/utils`. The CLI wrote `from "cn"` (an unrelated npm package) for the starter set, so fix that and remove the dependency if it happens again.
+- It must import `cn` from `@/lib/utils`. The CLI wrote `from "cn"` (an unrelated npm package) for the starter set, so run `pnpm shadcn:fix` and `pnpm remove cn` if it happens again.
 - Icons come from `@lucide/vue` (`lucide-vue-next` is deprecated).
 - The CLI may add new theme tokens to `src/style.css`. Keep them.
 

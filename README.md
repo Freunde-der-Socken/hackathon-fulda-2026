@@ -42,7 +42,10 @@ pnpm infra:up                            # Postgres + Mosquitto
 pnpm dev
 ```
 
-Then open <http://localhost:5173/api/health>.
+Then open <http://localhost:5173/api/health>. The commands also work in PowerShell (`cp` is an alias for `Copy-Item`).
+
+- **Windows (native)**: install Node 24, pnpm and Docker Desktop (WSL 2 backend). Use PowerShell or Windows Terminal. Keep Git's default `core.autocrlf`: the repo's `.gitattributes` checks files out with LF, which `pnpm fmt:check` expects. Re-clone if you cloned before that file existed. WSL or the devcontainer is still the smoother path.
+- **macOS**: install Node 24 (for example with `nvm` or `fnm`, they read `.nvmrc`), pnpm and Docker Desktop, the documented default and the same as for the devcontainer. OrbStack or similar works too if you already use it.
 
 ## Everyday commands
 
@@ -118,12 +121,12 @@ The API validates its variables at startup and exits with a readable list if one
 ```sh
 cd apps/web
 pnpm dlx shadcn-vue@latest add badge
-grep -rl 'from "cn"' src | xargs sed -i 's#from "cn"#from "@/lib/utils"#'   # see below
+pnpm shadcn:fix   # see below
 pnpm remove cn
 cd ../.. && pnpm fmt
 ```
 
-The CLI currently writes `from "cn"` (an unrelated npm package, which it also installs) instead of `@/lib/utils`, so the two lines after `add` fix that. Skip them if the CLI no longer does it. Icons come from `@lucide/vue`. More in [`apps/web/README.md`](apps/web/README.md).
+The CLI currently writes `from "cn"` (an unrelated npm package, which it also installs) instead of `@/lib/utils`, so `pnpm shadcn:fix` (a Node script, works in any shell) and `pnpm remove cn` fix that. Skip them if the CLI no longer does it. Icons come from `@lucide/vue`. More in [`apps/web/README.md`](apps/web/README.md).
 
 ### Add a database table + migration
 
@@ -197,7 +200,7 @@ Extend `@repo/typescript-config/base.json` (contracts), `node.json` (API) or `vu
 
 ## Troubleshooting
 
-- **Port already in use**: find the process with `lsof -i :<port>`, or pick another port, see [Ports & URLs](#ports--urls). Postgres on 5432 is the usual one: set `POSTGRES_PORT` in the root `.env` and the same port in `DATABASE_URL`.
+- **Port already in use**: find the process with `lsof -i :<port>` (PowerShell: `Get-NetTCPConnection -LocalPort <port>`), or pick another port, see [Ports & URLs](#ports--urls). Postgres on 5432 is the usual one: set `POSTGRES_PORT` in the root `.env` and the same port in `DATABASE_URL`.
 - **The API says `db: "disabled"` or `mqtt: "disabled"`**: `DATABASE_URL` / `MQTT_URL` is not set. Copy `apps/api/.env.example` to `apps/api/.env`. The devcontainer sets them for you.
 - **Everything is slow on Windows**: the repo is under `/mnt/c`. Clone it into the WSL filesystem (`~/…`) instead.
 - **`pnpm install` fails on the Node version or on build scripts**: use Node 24, and see `allowBuilds` in `pnpm-workspace.yaml` for dependencies allowed to run install scripts.

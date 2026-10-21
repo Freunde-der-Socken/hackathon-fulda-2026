@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "typecheck": "vue-tsc --build",
     "lint": "oxlint",
-    "lint:fix": "oxlint --fix"
+    "lint:fix": "oxlint --fix",
+    "shadcn:fix": "node scripts/fix-cn-imports.mjs"
   },
   "dependencies": {
     "@lucide/vue": "^1.60.0",
