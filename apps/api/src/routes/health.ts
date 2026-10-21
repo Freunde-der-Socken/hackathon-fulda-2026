@@ -14,10 +14,16 @@ export const health: FastifyPluginAsyncZod = async (app) => {
         db = 'down';
       }
     }
+    const mqtt: HealthResponse['mqtt'] = !app.hasDecorator('mqtt')
+      ? 'disabled'
+      : app.mqtt.connected
+        ? 'ok'
+        : 'down';
     return {
       status: 'ok' as const,
       version: process.env.npm_package_version ?? 'dev',
       db,
+      mqtt,
     };
   });
 };

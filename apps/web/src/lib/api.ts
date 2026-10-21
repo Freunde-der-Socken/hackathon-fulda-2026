@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 
-const BASE = import.meta.env.VITE_API_URL || '/api';
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -20,7 +20,7 @@ async function request<T extends z.ZodType>(
   response: T,
   body?: unknown,
 ): Promise<z.infer<T>> {
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetch(`${API_BASE}${path}`, {
     method,
     headers: {
       Accept: 'application/json',

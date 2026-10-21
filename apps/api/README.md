@@ -23,3 +23,34 @@ pnpm dev
 4. Write the Zod schemas for the route in `@repo/contracts`. They are hand-written on purpose, so the API shape isn't tied to the table layout.
 
 For quick experiments `pnpm --filter @repo/api db:push` syncs the schema without a migration file. Don't use it for anything you want to keep, and run `db:generate` before you commit. `db:studio` opens Drizzle Studio.
+
+## MQTT (optional)
+
+Without `MQTT_URL` the API starts, logs a warning and reports `mqtt: "disabled"` on `GET /api/health`. Otherwise `app.mqtt` gives typed, validated access to the broker (Mosquitto from `compose.yaml`, start it with `pnpm mqtt:up`).
+
+Topics and payloads are defined only in `packages/contracts/src/mqtt/index.ts`:
+
+```ts
+export const topics = {
+  sensorReading: { pattern: 'sensors/+/reading', schema: SensorReading },
+} as const;
+```
+
+Convention: `<domain>/<id>/<event>`, lowercase, no leading slash. `+` is the only wildcard, and its values are the `params`. `SensorReading` is an example: replace it with the project's own topics.
+
+```ts
+// Throws (ZodError) before anything reaches the broker if the payload is invalid
+await app.mqtt.publish('sensorReading', ['sensor-1'], {
+  deviceId: 'sensor-1',
+  value: 21.5,
+  unit: '°C',
+  ts,
+});
+
+// Invalid incoming payloads are logged and dropped, so the handler only sees valid ones
+const unsubscribe = await app.mqtt.subscribe('sensorReading', ({ payload, params }) => {
+  app.log.info({ payload, params }, 'reading');
+});
+```
+
+Getting messages to the browser is not set up yet. The plan (issue #9) is Server-Sent Events from the API: a route that subscribes with `app.mqtt.subscribe` and streams the messages, so the broker stays private. Remember to end open streams in a `preClose` hook, otherwise `app.close()` waits for them forever.
