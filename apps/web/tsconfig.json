@@ -1,0 +1,8 @@
+{
+  "extends": "@repo/typescript-config/vue.json",
+  "compilerOptions": {
+    "types": ["vite/client", "node"],
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue", "env.d.ts", "vite.config.ts"]
+}
