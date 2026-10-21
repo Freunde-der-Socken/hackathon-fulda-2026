@@ -3,7 +3,7 @@ import { z } from 'zod';
 const Env = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   HOST: z.string().default('0.0.0.0'),
-  PORT: z.coerce.number().int().min(0).max(65535).default(3000),
+  API_PORT: z.coerce.number().int().min(0).max(65535).default(3000),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   DATABASE_URL: z.url().optional(), // used by #8
@@ -12,7 +12,7 @@ const Env = z.object({
 export type Env = z.infer<typeof Env>;
 
 function parseEnv(source: NodeJS.ProcessEnv): Env {
-  // An empty value (`PORT=`) means "unset", so the default applies
+  // An empty value (`API_PORT=`) means "unset", so the default applies
   const defined = Object.fromEntries(Object.entries(source).filter(([, value]) => value !== ''));
   const result = Env.safeParse(defined);
   if (!result.success) {

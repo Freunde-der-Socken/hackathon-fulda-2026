@@ -1,0 +1,37 @@
+{
+  "name": "hackathon-fulda-2026",
+  "dockerComposeFile": ["../compose.yaml", "compose.devcontainer.yaml"],
+  "service": "workspace",
+  "workspaceFolder": "/workspaces/hackathon-fulda-2026",
+  "shutdownAction": "stopCompose",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": { "moby": false },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "forwardPorts": [5173, 3000, "postgres:5432", "mosquitto:1883", "mosquitto:9001"],
+  "portsAttributes": {
+    "5173": { "label": "web", "onAutoForward": "openBrowser" },
+    "3000": { "label": "api" },
+    "postgres:5432": { "label": "postgres", "onAutoForward": "silent" },
+    "mosquitto:1883": { "label": "mqtt", "onAutoForward": "silent" },
+    "mosquitto:9001": { "label": "mqtt-ws", "onAutoForward": "silent" }
+  },
+  // The store volume is created root-owned, so hand it to `node` before pnpm uses it.
+  // confirm-modules-purge=false: a node_modules installed on the host gets replaced without a TTY prompt.
+  "postCreateCommand": "sudo chown -R node:node /home/node/.local/share/pnpm && npm i -g pnpm@11.25.0 && pnpm config set store-dir /home/node/.local/share/pnpm/store && pnpm install --config.confirm-modules-purge=false",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "oxc.oxc-vscode",
+        "Vue.volar",
+        "bradlc.vscode-tailwindcss",
+        "ms-azuretools.vscode-docker",
+        "github.vscode-github-actions"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "oxc.oxc-vscode"
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+services:
+  workspace:
+    image: mcr.microsoft.com/devcontainers/typescript-node:24
+    command: sleep infinity
+    volumes:
+      # Relative to the first compose file (../compose.yaml), so the repo root, not .devcontainer/
+      - .:/workspaces/hackathon-fulda-2026:cached
+      - pnpm-store:/home/node/.local/share/pnpm/store
+    environment:
+      # Inside the compose network the services are reached by name, not localhost
+      DATABASE_URL: postgres://app:app@postgres:5432/app
+      MQTT_URL: mqtt://mosquitto:1883
+    depends_on:
+      postgres: { condition: service_healthy }
+      mosquitto: { condition: service_healthy }
+
+volumes:
+  pnpm-store:

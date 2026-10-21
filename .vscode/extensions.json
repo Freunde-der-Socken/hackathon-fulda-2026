@@ -1,4 +1,10 @@
 {
-  "recommendations": ["oxc.oxc-vscode"],
+  "recommendations": [
+    "oxc.oxc-vscode",
+    "Vue.volar",
+    "bradlc.vscode-tailwindcss",
+    "ms-azuretools.vscode-docker",
+    "github.vscode-github-actions"
+  ],
   "unwantedRecommendations": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
 }

@@ -1,5 +1,37 @@
 # hackathon-fulda-2026
 
+## Getting started
+
+### Devcontainer (recommended)
+
+Prerequisites: Docker Desktop or Docker Engine, and VS Code with the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension.
+
+1. Clone the repo. On Windows, clone it inside WSL (`~/…`), not under `/mnt/c`: bind mounts from the Windows filesystem are very slow.
+2. Open the folder in VS Code and run **Dev Containers: Reopen in Container**. The first build installs the dependencies on its own.
+3. In the container terminal, run `pnpm dev`. Web is on <http://localhost:5173> and the API on <http://localhost:3000>, forwarded to your browser by VS Code.
+
+Postgres and Mosquitto start with the container. Inside it they are reached by service name (`DATABASE_URL` and `MQTT_URL` are preset), and `docker compose ps` works from the container terminal. If a host port is already taken, set another one:
+
+| Service             | Where                                            | Variable                                     |
+| ------------------- | ------------------------------------------------ | -------------------------------------------- |
+| Postgres, Mosquitto | root `.env` (see [`.env.example`](.env.example)) | `POSTGRES_PORT`, `MQTT_PORT`, `MQTT_WS_PORT` |
+| Web                 | `apps/web/.env` (see its `.env.example`)         | `WEB_PORT`                                   |
+| API                 | root `.env` (also used by the web dev proxy)     | `API_PORT`                                   |
+
+Inside the container the services always use their default ports. Only the ports published on your machine change.
+
+To open the app on a phone on the same Wi-Fi, run `pnpm --filter @repo/web dev:host` and browse to `http://<LAN IP of your computer>:5173`. On WSL this also needs a port forward from Windows to the WSL IP.
+
+### Local
+
+Node 24, `npm i -g pnpm@11.25.0`, then:
+
+```sh
+pnpm install
+pnpm infra:up   # Postgres + Mosquitto
+pnpm dev
+```
+
 ## Toolchain
 
 - **Node 24** ([`.nvmrc`](.nvmrc)). `pnpm install` fails on older versions because `engineStrict: true` is set in [`pnpm-workspace.yaml`](pnpm-workspace.yaml).
