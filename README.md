@@ -1,5 +1,7 @@
 # hackathon-fulda-2026
 
+[![CI](https://github.com/Holytrashbag/hackathon-fulda-2026/actions/workflows/ci.yml/badge.svg)](https://github.com/Holytrashbag/hackathon-fulda-2026/actions/workflows/ci.yml)
+
 ## Getting started
 
 ### Devcontainer (recommended)
