@@ -162,7 +162,7 @@ Needs `MQTT_URL`.
 - **Where code goes**: Zod schemas and types used by both sides go in `packages/contracts`. Database schema stays in the API (`apps/api/src/db/schema`). UI components go in `apps/web/src/components` (shadcn-vue ones in `components/ui`). Don't import from `apps/*` into `packages/*`.
 - **Dependencies**: add shared ones through the pnpm catalog (see [Toolchain](#toolchain)).
 - **API logging**: use `app.log` / `request.log`, not `console.*` (lint fails on it).
-- AI assistants: see [`CLAUDE.md`](CLAUDE.md) (also available as `AGENTS.md`).
+- AI assistants: see [`AGENTS.md`](AGENTS.md) (`CLAUDE.md` imports it).
 
 ## Toolchain
 

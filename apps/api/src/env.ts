@@ -6,8 +6,8 @@ const Env = z.object({
   API_PORT: z.coerce.number().int().min(0).max(65535).default(3000),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
-  DATABASE_URL: z.url().optional(), // used by #8
-  MQTT_URL: z.url().optional(), // used by #9
+  DATABASE_URL: z.url().optional(),
+  MQTT_URL: z.url().optional(),
 });
 export type Env = z.infer<typeof Env>;
 
