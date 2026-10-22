@@ -27,3 +27,6 @@ pnpm-debug.log*
 
 # Downloaded models
 .model-cache
+
+# Claude Code personal overrides
+.claude/settings.local.json
