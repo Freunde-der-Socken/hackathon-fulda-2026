@@ -1,0 +1,16 @@
+# SITE_ADDRESS: ":80" for plain HTTP (local, Raspberry Pi), a domain name for automatic HTTPS
+{$SITE_ADDRESS::80} {
+	encode zstd gzip
+
+	handle /api/* {
+		# Caddy flushes text/event-stream responses immediately, so SSE needs no extra config
+		reverse_proxy {$API_UPSTREAM:api:3000}
+	}
+
+	handle {
+		root * /srv
+		# HTML5 history mode: unknown paths load the app
+		try_files {path} /index.html
+		file_server
+	}
+}

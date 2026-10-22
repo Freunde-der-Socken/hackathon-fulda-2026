@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+**/.turbo
+**/*.tsbuildinfo
+.git
+.devcontainer
+.vscode
+.env*
+!.env.example
+!.env.prod.example
