@@ -7,5 +7,5 @@ export default defineConfig({
   // emit dist/server.js (the package is "type": "module") instead of .mjs
   fixedExtension: false,
   // @repo/contracts ships raw .ts, so it has to be bundled
-  noExternal: [/^@repo\//],
+  deps: { alwaysBundle: [/^@repo\//] },
 });

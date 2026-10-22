@@ -53,4 +53,4 @@ const unsubscribe = await app.mqtt.subscribe('sensorReading', ({ payload, params
 });
 ```
 
-Getting messages to the browser is not set up yet. The plan (issue #9) is Server-Sent Events from the API: a route that subscribes with `app.mqtt.subscribe` and streams the messages, so the broker stays private. Remember to end open streams in a `preClose` hook, otherwise `app.close()` waits for them forever.
+Getting messages to the browser is not set up yet. The plan (issue #27) is Server-Sent Events from the API: a route that subscribes with `app.mqtt.subscribe` and streams the messages, so the broker stays private. Remember to end open streams in a `preClose` hook, otherwise `app.close()` waits for them forever.
