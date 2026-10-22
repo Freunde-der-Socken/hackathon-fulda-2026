@@ -53,4 +53,4 @@ const unsubscribe = await app.mqtt.subscribe('sensorReading', ({ payload, params
 });
 ```
 
-Getting messages to the browser is not set up yet. The plan (issue #27) is Server-Sent Events from the API: a route that subscribes with `app.mqtt.subscribe` and streams the messages, so the broker stays private. Remember to end open streams in a `preClose` hook, otherwise `app.close()` waits for them forever.
+Messages reach the browser through `GET /api/events` ([`routes/events.ts`](src/routes/events.ts)), a Server-Sent Events stream that is only registered when `MQTT_URL` is set. It subscribes to every key in `topics` and sends each valid message as `event: <topicKey>` with `data: { topic, params, payload }`, plus a heartbeat comment every 15 s. The broker stays private. Open streams are ended in a `preClose` hook, otherwise `app.close()` would wait for them forever, and the CORS headers are copied into `writeHead` by hand because a hijacked reply skips Fastify's header handling. On the web side use `useLiveTopic(topicKey)`.

@@ -53,3 +53,7 @@ export function matchTopic(pattern: string, topic: string): string[] | null {
   }
   return params;
 }
+
+/** What `GET /api/events` sends for every message (as `event: <topicKey>`). */
+export const topicEvent = <K extends TopicKey>(key: K) =>
+  z.object({ topic: z.string(), params: z.array(z.string()), payload: topics[key].schema });
