@@ -59,6 +59,7 @@ Run them from the repo root.
 | `pnpm --filter @repo/web dev:host`              | Web dev server reachable from other devices on your network          |
 | `pnpm build`                                    | Typecheck and build everything                                       |
 | `pnpm lint` / `pnpm typecheck`                  | oxlint / `tsc` and `vue-tsc` in every package                        |
+| `pnpm test`                                     | Run the Vitest tests of every package once (not part of CI)          |
 | `pnpm fmt` / `pnpm fmt:check`                   | Format with oxfmt / check formatting (CI runs the check)             |
 | `pnpm infra:up` / `infra:down`                  | Start / stop Postgres and Mosquitto                                  |
 | `pnpm infra:reset`                              | Stop them **and delete their data** (volumes)                        |
@@ -322,9 +323,18 @@ Extend `@repo/typescript-config/base.json` (contracts), `node.json` (API) or `vu
 
 ### Turbo tasks
 
-- Root scripts: `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck` run through Turbo. `pnpm fmt` / `pnpm fmt:check` run oxfmt on the whole repo.
+- Root scripts: `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test` run through Turbo. `pnpm fmt` / `pnpm fmt:check` run oxfmt on the whole repo.
 - `transit` is an empty task that only depends on `^transit`. `lint` and `typecheck` depend on it, so their caches are invalidated when a dependency's source changes, without building that dependency first.
 - Env vars that affect a build must be listed under `build.env` in [`turbo.json`](turbo.json) (`VITE_*` already is), or Turbo serves stale cache hits.
+
+### Tests
+
+Vitest runs in `packages/contracts` and `apps/api` (node) and in `apps/web` (happy-dom with `@vue/test-utils`; the `@/` alias works). CI does not run them, so run them yourself when they help.
+
+- `pnpm test` runs all packages once. In a package: `pnpm --filter @repo/web test` (single run) or `test:watch` (reruns on change).
+- Put tests next to the code as `*.test.ts` (for example `NotFoundView.test.ts` beside `NotFoundView.vue`).
+- Import `describe`, `it` and `expect` from `vitest`. Globals are off, because TS 6 doesn't pick up their types on its own.
+- API tests build the app with `buildApp()` and call `app.inject(...)`. The config unsets `DATABASE_URL` and `MQTT_URL`, so `db` and `mqtt` are `disabled`.
 
 ## Troubleshooting
 

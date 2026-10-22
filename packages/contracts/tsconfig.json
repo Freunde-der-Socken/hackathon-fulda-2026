@@ -1,5 +1,5 @@
 {
   "extends": "@repo/typescript-config/base.json",
   "compilerOptions": { "types": ["node"] },
-  "include": ["src", "scripts"]
+  "include": ["src", "scripts", "vitest.config.ts"]
 }
