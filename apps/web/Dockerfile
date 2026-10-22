@@ -1,5 +1,6 @@
 # Build from the repository root: docker build -f apps/web/Dockerfile .
-FROM node:24-slim AS build
+# The build stage runs natively on the builder: the output is static files, identical for every platform.
+FROM --platform=$BUILDPLATFORM node:24-slim AS build
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 RUN corepack enable

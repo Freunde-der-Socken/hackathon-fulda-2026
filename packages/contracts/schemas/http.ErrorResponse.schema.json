@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "statusCode": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "error": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "array",
+            "items": {
+              "type": [
+                "string",
+                "number"
+              ]
+            }
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "message"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "statusCode",
+    "error",
+    "message"
+  ],
+  "additionalProperties": false,
+  "title": "ErrorResponse"
+}

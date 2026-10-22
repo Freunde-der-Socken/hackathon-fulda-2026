@@ -1,24 +1,27 @@
 import { z } from 'zod';
 
-/** Example payload: the pattern to copy for real topics. Replace it with the project's own. */
-export const SensorReading = z.object({
-  deviceId: z.string(),
-  value: z.number(),
-  unit: z.string(),
-  ts: z.iso.datetime(),
-});
-export type SensorReading = z.infer<typeof SensorReading>;
+export interface TopicDefinition {
+  pattern: string;
+  schema: z.ZodType;
+}
 
 /**
  * Single place that maps topic patterns to payload schemas.
  * Convention: `<domain>/<id>/<event>`, lowercase, no leading slash. `+` stands for one level.
  */
 export const topics = {
-  sensorReading: { pattern: 'sensors/+/reading', schema: SensorReading },
-} as const;
+  // key: { pattern: '<domain>/+/<event>', schema: PayloadSchema },
+} as const satisfies Record<string, TopicDefinition>;
+
+type Topics = typeof topics;
+type TopicSchema<K extends TopicKey> = Extract<Topics[K], TopicDefinition>['schema'];
+
+/** The definition behind a topic key, widened so generic code needn't index `topics` by `K`. */
+export const getTopic = (key: TopicKey): TopicDefinition =>
+  (topics as Record<string, TopicDefinition>)[key]!;
 
 export type TopicKey = keyof typeof topics;
-export type TopicPayload<K extends TopicKey> = z.infer<(typeof topics)[K]['schema']>;
+export type TopicPayload<K extends TopicKey> = z.infer<TopicSchema<K>>;
 
 /** Fills the `+` wildcards of a topic pattern in order: `('sensors/+/reading', ['a'])` gives `sensors/a/reading`. */
 export function buildTopic(pattern: string, params: readonly string[]): string {
@@ -53,3 +56,11 @@ export function matchTopic(pattern: string, topic: string): string[] | null {
   }
   return params;
 }
+
+/** What `GET /api/events` sends for every message (as `event: <topicKey>`). */
+export const topicEvent = <K extends TopicKey>(key: K) =>
+  z.object({
+    topic: z.string(),
+    params: z.array(z.string()),
+    payload: getTopic(key).schema,
+  });

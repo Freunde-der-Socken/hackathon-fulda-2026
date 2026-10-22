@@ -27,5 +27,10 @@ jobs:
           key: turbo-${{ runner.os }}-${{ github.sha }}
           restore-keys: turbo-${{ runner.os }}-
       - run: pnpm fmt:check
+      - name: JSON Schemas are up to date
+        run: |
+          pnpm --filter @repo/contracts schemas
+          git add --intent-to-add packages/contracts/schemas
+          git diff --exit-code packages/contracts/schemas
       # Only errors fail the job. Warnings are reported but allowed.
       - run: pnpm turbo run lint typecheck build --cache-dir=.turbo/cache

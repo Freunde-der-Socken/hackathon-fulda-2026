@@ -53,21 +53,22 @@ Then open <http://localhost:5173/api/health>. The commands also work in PowerShe
 
 Run them from the repo root.
 
-| Command                                         | What it does                                                |
-| ----------------------------------------------- | ----------------------------------------------------------- |
-| `pnpm dev`                                      | Web and API in watch mode (through Turbo)                   |
-| `pnpm --filter @repo/web dev:host`              | Web dev server reachable from other devices on your network |
-| `pnpm build`                                    | Typecheck and build everything                              |
-| `pnpm lint` / `pnpm typecheck`                  | oxlint / `tsc` and `vue-tsc` in every package               |
-| `pnpm fmt` / `pnpm fmt:check`                   | Format with oxfmt / check formatting (CI runs the check)    |
-| `pnpm infra:up` / `infra:down`                  | Start / stop Postgres and Mosquitto                         |
-| `pnpm infra:reset`                              | Stop them **and delete their data** (volumes)               |
-| `pnpm infra:logs`                               | Follow the logs of both services                            |
-| `pnpm db:up` / `pnpm mqtt:up`                   | Start only Postgres / only Mosquitto                        |
-| `pnpm db:migrate`                               | Apply the SQL migrations in `apps/api/drizzle/`             |
-| `pnpm --filter @repo/api db:generate`           | Create a migration from schema changes                      |
-| `pnpm --filter @repo/api db:push` / `db:studio` | Sync the schema without a migration / open Drizzle Studio   |
-| `pnpm --filter @repo/api db:seed`               | Run `apps/api/src/db/seed.ts`                               |
+| Command                                         | What it does                                                         |
+| ----------------------------------------------- | -------------------------------------------------------------------- |
+| `pnpm dev`                                      | Web and API in watch mode (through Turbo)                            |
+| `pnpm --filter @repo/web dev:host`              | Web dev server reachable from other devices on your network          |
+| `pnpm build`                                    | Typecheck and build everything                                       |
+| `pnpm lint` / `pnpm typecheck`                  | oxlint / `tsc` and `vue-tsc` in every package                        |
+| `pnpm fmt` / `pnpm fmt:check`                   | Format with oxfmt / check formatting (CI runs the check)             |
+| `pnpm infra:up` / `infra:down`                  | Start / stop Postgres and Mosquitto                                  |
+| `pnpm infra:reset`                              | Stop them **and delete their data** (volumes)                        |
+| `pnpm infra:logs`                               | Follow the logs of both services                                     |
+| `pnpm mqtt:sub`                                 | Print every MQTT message (see [Connect a device](#connect-a-device)) |
+| `pnpm db:up` / `pnpm mqtt:up`                   | Start only Postgres / only Mosquitto                                 |
+| `pnpm db:migrate`                               | Apply the SQL migrations in `apps/api/drizzle/`                      |
+| `pnpm --filter @repo/api db:generate`           | Create a migration from schema changes                               |
+| `pnpm --filter @repo/api db:push` / `db:studio` | Sync the schema without a migration / open Drizzle Studio            |
+| `pnpm --filter @repo/api db:seed`               | Run `apps/api/src/db/seed.ts`                                        |
 
 ## Ports & URLs
 
@@ -146,9 +147,17 @@ Details in [`apps/api/README.md`](apps/api/README.md).
 Needs `MQTT_URL`.
 
 1. Add the topic to `topics` in `packages/contracts/src/mqtt/index.ts` (`<domain>/<id>/<event>`, lowercase, `+` for one wildcard level) with its payload schema.
-2. Subscribe, for example in a plugin: `await app.mqtt.subscribe('sensorReading', ({ payload, params }) => app.log.info({ payload, params }, 'reading'));`. Invalid payloads are logged and dropped.
-3. Publish: `await app.mqtt.publish('sensorReading', ['sensor-1'], { deviceId: 'sensor-1', value: 21.5, unit: '°C', ts: new Date().toISOString() });`. An invalid payload throws before it reaches the broker.
+2. Subscribe, for example in a plugin: `await app.mqtt.subscribe('reading', ({ payload, params }) => app.log.info({ payload, params }, 'reading'));`. Invalid payloads are logged and dropped.
+3. Publish: `await app.mqtt.publish('reading', ['sensor-1'], { deviceId: 'sensor-1', value: 21.5, unit: '°C', ts: new Date().toISOString() });`. An invalid payload throws before it reaches the broker.
 4. Guard it with `app.hasDecorator('mqtt')`, since the plugin is skipped without `MQTT_URL`.
+
+### Show live MQTT data in a view
+
+Needs `MQTT_URL` and a topic from the recipe above. The API streams every valid message to the browser at `GET /api/events`.
+
+1. In the view: `const { latest, messages, connected } = useLiveTopic('reading');` (from `@/composables/useLiveTopic`). Payloads are validated with the contract schema, invalid ones are dropped and counted in `dropped`.
+2. Render `latest` or `messages` (newest first, 50 by default, `{ max }` to change). `connected` is false while the stream reconnects.
+3. Try it: `mosquitto_pub -h localhost -t sensors/s1/reading -m '{"deviceId":"s1","value":21.5,"unit":"°C","ts":"2026-01-01T00:00:00.000Z"}'`.
 
 ### Test on your phone
 
@@ -156,6 +165,85 @@ Needs `MQTT_URL`.
 2. `pnpm --filter @repo/web dev:host`, and note the `Network:` address that Vite prints (the LAN IP of your computer).
 3. Open `http://<that IP>:5173` on the phone. The `/api` proxy works the same way, so the API needs no change.
 4. On WSL the address Vite prints is the WSL one. Forward the port from Windows (`netsh interface portproxy add v4tov4 listenport=5173 connectaddress=<WSL IP> connectport=5173`, as admin) and allow it in the Windows firewall.
+
+## Connect a device
+
+A device only needs three things: the broker's IP address, port `1883` (plain MQTT, no TLS) and a topic with a JSON payload. The repo is hardware-agnostic, so this works the same for a microcontroller, a phone app or a laptop.
+
+### At the event (team network)
+
+We use our own network from the start, not only when the venue Wi-Fi fails, so no address changes mid-event. The Pi is plugged into our switch, devices join the 5G router's Wi-Fi, and the venue Wi-Fi only gives the laptops internet.
+
+| What                | Value                                                                               |
+| ------------------- | ----------------------------------------------------------------------------------- |
+| Router Wi-Fi (SSID) | _fill in when the router is set up_                                                 |
+| Router admin login  | In the team password manager (entry "5G router")                                    |
+| Broker IP (the Pi)  | _fill in_. Fixed by a DHCP reservation for the Pi's MAC address on the router       |
+| Port                | `1883`, plain MQTT                                                                  |
+| User / password     | `device` / `MQTT_DEVICE_PASSWORD` from the Pi's `.env.prod` (shared by all devices) |
+
+- Use the IP, not a `.local` name: mDNS is unreliable on microcontrollers and some phones.
+- A laptop reaches the Pi by plugging into the switch with a cable, so the venue Wi-Fi keeps providing its internet. Joining the router's Wi-Fi works too, but then the laptop has no venue internet unless it has a second adapter.
+- The Pi runs the [production compose](#run-the-production-build), so the broker has no anonymous access.
+
+### During development (laptop as broker)
+
+`pnpm infra:up` publishes the broker on all interfaces of your laptop: port `1883` for MQTT and `9001` for MQTT over WebSockets. There are no credentials.
+
+1. Put the device and the laptop on the same network.
+2. Find the laptop's LAN IP and use it as the broker address:
+   - **Linux**: `hostname -I` (first address)
+   - **macOS**: `ipconfig getifaddr en0` (Wi-Fi, `en1` or another interface otherwise)
+   - **Windows**: `ipconfig`, the IPv4 address of the Wi-Fi or Ethernet adapter
+3. Allow port 1883 through the firewall if the device can't connect:
+   - **Linux**: `sudo ufw allow 1883/tcp` (only if ufw is active)
+   - **macOS**: accept the "allow incoming connections" prompt for Docker
+   - **Windows** (PowerShell as admin): `New-NetFirewallRule -DisplayName "MQTT 1883" -Direction Inbound -Protocol TCP -LocalPort 1883 -Action Allow`
+4. Check from another machine: `mosquitto_pub -h <laptop IP> -t test -m hi` (or any MQTT app). `pnpm mqtt:sub` on the laptop should print `test hi`.
+
+**Windows + WSL**: with Docker Desktop (WSL 2 backend) the port is published on Windows itself, so the firewall rule above is all it takes. Check once that a second device reaches it. With Docker Engine inside WSL there is no Docker Desktop, so forward the port from Windows like in [Test on your phone](#test-on-your-phone), as admin, plus the firewall rule:
+
+```powershell
+netsh interface portproxy add v4tov4 listenport=1883 listenaddress=0.0.0.0 connectaddress=<WSL IP> connectport=1883
+```
+
+The WSL IP is the first address of `hostname -I` inside WSL, and it can change after a restart.
+
+**Devcontainer**: the broker port is published by the compose service on your host, so the address is your computer's LAN IP, same as above. Inside the container the broker is `mosquitto:1883`.
+
+### Topics and payloads
+
+Topics and their payload schemas are defined only in [`packages/contracts/src/mqtt/index.ts`](packages/contracts/src/mqtt/index.ts). Firmware can read the JSON Schema files in [`packages/contracts/schemas/`](packages/contracts/schemas/) (`mqtt.<topicKey>.schema.json`, the `title` holds the topic pattern). Payloads are UTF-8 JSON with ISO 8601 timestamps (`2026-01-01T00:00:00.000Z`). The API logs and drops messages that don't match the contract.
+
+### Send test messages without hardware
+
+The commands run the clients inside the broker container, so there is nothing to install and they behave the same on Linux, macOS and Windows. Run them from the repo root.
+
+| Command         | What it does                               |
+| --------------- | ------------------------------------------ |
+| `pnpm mqtt:sub` | Prints every message on every topic (`-v`) |
+
+Publish a message to a topic (here the example topic `sensors/s1/reading`; use a topic and payload from the contracts):
+
+```sh
+# bash, zsh
+docker compose exec mosquitto mosquitto_pub -t sensors/s1/reading -m '{"deviceId":"s1","value":21.5,"unit":"C","ts":"2026-01-01T00:00:00.000Z"}'
+```
+
+```powershell
+# PowerShell: Windows PowerShell 5.1 strips the double quotes from native command arguments, so pipe the payload instead
+'{"deviceId":"s1","value":21.5,"unit":"C","ts":"2026-01-01T00:00:00.000Z"}' | docker compose exec -T mosquitto mosquitto_pub -t sensors/s1/reading -s
+```
+
+The piped form (`-s` reads the message from stdin) works in bash too.
+
+**On the Pi** (production broker, which needs credentials), add `-f compose.prod.yaml --env-file .env.prod` after `docker compose` and `-u device -P <MQTT_DEVICE_PASSWORD>` to `mosquitto_pub` / `mosquitto_sub`. This is how to check that a device's message arrived:
+
+```sh
+docker compose -f compose.prod.yaml --env-file .env.prod exec mosquitto mosquitto_sub -u device -P <MQTT_DEVICE_PASSWORD> -v -t "#"
+```
+
+Prefer a GUI? [MQTT Explorer](https://mqtt-explorer.com/) connects to `<broker IP>:1883` and shows the topic tree.
 
 ## Run the production build
 
@@ -175,6 +263,22 @@ Needs `MQTT_URL`.
 | `WEB_PORT`, `WEB_HTTPS_PORT`, `MQTT_PORT` | Published ports (80, 443, 1883)                                                             |
 
 Broker credentials: the broker has no anonymous access. On every start the Mosquitto container builds its password file (`mosquitto_passwd`) from `MQTT_API_PASSWORD` and `MQTT_DEVICE_PASSWORD`, so there is no file to manage; change a password in `.env.prod` and run `up -d` again. Devices connect to `<host>:1883` as user `device`. There is no WebSocket listener: the browser gets live data through the API.
+
+### Prebuilt images (GHCR)
+
+CI builds the API and web images for `linux/amd64` and `linux/arm64` ([`images.yml`](.github/workflows/images.yml)) and pushes them from `main` to `ghcr.io/freunde-der-socken/hackathon-fulda-2026-api` and `-web`, tagged `latest` and with the commit SHA. A host can pull them instead of building:
+
+```sh
+docker compose -f compose.prod.yaml --env-file .env.prod pull
+docker compose -f compose.prod.yaml --env-file .env.prod up -d --wait
+```
+
+`IMAGE_TAG` in `.env.prod` pins a commit SHA instead of `latest`. `IMAGE_PREFIX` points at another registry or fork.
+
+- The arm64 images need a **64-bit** Raspberry Pi OS (`uname -m` prints `aarch64`).
+- While the repo is private, so are the packages: run `docker login ghcr.io` once on the Pi and the Azure VM, with a GitHub token that only has `read:packages`. A public repo makes the packages public too (set their visibility in the package settings), and no login is needed.
+- Check the platforms: `docker buildx imagetools inspect ghcr.io/freunde-der-socken/hackathon-fulda-2026-api:latest`.
+- Pull requests that touch app sources, the lockfile or a Dockerfile build both images (without pushing), so a broken Dockerfile fails there.
 
 The API applies the SQL migrations in `apps/api/drizzle/` itself when it starts in production. Caddy keeps its certificates in the `caddy-data` volume. `docker compose -f compose.prod.yaml --env-file .env.prod down -v` deletes all data.
 

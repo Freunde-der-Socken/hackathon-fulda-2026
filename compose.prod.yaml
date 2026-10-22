@@ -1,9 +1,11 @@
 # Production stack: docker compose -f compose.prod.yaml --env-file .env.prod up --build
+# Or pull the prebuilt images from GHCR: docker compose -f compose.prod.yaml --env-file .env.prod pull && ... up -d
 # Copy .env.prod.example to .env.prod first. Required secrets have no defaults.
 name: hackathon-fulda-prod
 
 services:
   web:
+    image: ${IMAGE_PREFIX:-ghcr.io/freunde-der-socken/hackathon-fulda-2026}-web:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: apps/web/Dockerfile
@@ -22,6 +24,7 @@ services:
         condition: service_healthy
 
   api:
+    image: ${IMAGE_PREFIX:-ghcr.io/freunde-der-socken/hackathon-fulda-2026}-api:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: apps/api/Dockerfile
