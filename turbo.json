@@ -22,6 +22,9 @@
       "cache": false,
       "persistent": true,
       "passThroughEnv": ["DATABASE_URL", "MQTT_URL"]
+    },
+    "test": {
+      "dependsOn": ["transit"]
     }
   }
 }

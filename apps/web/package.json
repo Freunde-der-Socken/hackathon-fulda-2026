@@ -12,6 +12,8 @@
     "typecheck": "vue-tsc --build",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "shadcn:fix": "node scripts/fix-cn-imports.mjs"
   },
   "dependencies": {
@@ -35,9 +37,12 @@
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "catalog:",
     "@vitejs/plugin-vue": "^6.0.10",
+    "@vue/test-utils": "2.5.1",
+    "happy-dom": "21.0.4",
     "tailwindcss": "^4.3.3",
     "typescript": "catalog:",
     "vite": "^8.3.4",
+    "vitest": "5.0.5",
     "vue-tsc": "^3.3.13"
   }
 }
