@@ -15,6 +15,7 @@
     "infra:logs": "docker compose logs -f",
     "db:up": "docker compose up -d --wait postgres",
     "mqtt:up": "docker compose up -d --wait mosquitto",
+    "mqtt:sub": "docker compose exec mosquitto mosquitto_sub -v -t \"#\"",
     "db:migrate": "pnpm --filter @repo/api db:migrate"
   },
   "devDependencies": {
