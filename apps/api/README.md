@@ -32,15 +32,15 @@ Topics and payloads are defined only in `packages/contracts/src/mqtt/index.ts`:
 
 ```ts
 export const topics = {
-  sensorReading: { pattern: 'sensors/+/reading', schema: SensorReading },
+  reading: { pattern: 'sensors/+/reading', schema: Reading },
 } as const;
 ```
 
-Convention: `<domain>/<id>/<event>`, lowercase, no leading slash. `+` is the only wildcard, and its values are the `params`. `SensorReading` is an example: replace it with the project's own topics.
+Convention: `<domain>/<id>/<event>`, lowercase, no leading slash. `+` is the only wildcard, and its values are the `params`. `reading` and `Reading` here are placeholders for your own topics.
 
 ```ts
 // Throws (ZodError) before anything reaches the broker if the payload is invalid
-await app.mqtt.publish('sensorReading', ['sensor-1'], {
+await app.mqtt.publish('reading', ['sensor-1'], {
   deviceId: 'sensor-1',
   value: 21.5,
   unit: '°C',
@@ -48,7 +48,7 @@ await app.mqtt.publish('sensorReading', ['sensor-1'], {
 });
 
 // Invalid incoming payloads are logged and dropped, so the handler only sees valid ones
-const unsubscribe = await app.mqtt.subscribe('sensorReading', ({ payload, params }) => {
+const unsubscribe = await app.mqtt.subscribe('reading', ({ payload, params }) => {
   app.log.info({ payload, params }, 'reading');
 });
 ```
