@@ -1,4 +1,10 @@
-import { buildTopic, matchTopic, topics, type TopicKey, type TopicPayload } from '@repo/contracts';
+import {
+  buildTopic,
+  getTopic,
+  matchTopic,
+  type TopicKey,
+  type TopicPayload,
+} from '@repo/contracts';
 import fp from 'fastify-plugin';
 import mqtt from 'mqtt';
 import { env } from '../env';
@@ -35,7 +41,9 @@ declare module 'fastify' {
   }
 }
 
-type AnyHandler = (message: MqttMessage<TopicKey>) => void | Promise<void>;
+type AnyHandler = (
+  message: MqttMessage<TopicKey> | { topic: string; params: string[]; payload: unknown },
+) => void | Promise<void>;
 
 export const mqttPlugin = fp(
   async (app) => {
@@ -55,7 +63,7 @@ export const mqttPlugin = fp(
 
     client.on('message', (topic, raw) => {
       for (const [key, set] of handlers) {
-        const { pattern, schema } = topics[key];
+        const { pattern, schema } = getTopic(key);
         const params = matchTopic(pattern, topic);
         if (!params) continue;
 
@@ -85,7 +93,7 @@ export const mqttPlugin = fp(
         return client.connected;
       },
       async publish(key, params, payload) {
-        const { pattern, schema } = topics[key];
+        const { pattern, schema } = getTopic(key);
         const topic = buildTopic(pattern, params);
         await client.publishAsync(topic, JSON.stringify(schema.parse(payload)));
       },
@@ -95,7 +103,7 @@ export const mqttPlugin = fp(
           set = new Set();
           handlers.set(key, set);
           // mqtt.js re-subscribes on its own after a reconnect
-          await client.subscribeAsync(topics[key].pattern);
+          await client.subscribeAsync(getTopic(key).pattern);
         }
         // The handler type is narrowed to K by the signature, the registry stores them widened
         set.add(handler as unknown as AnyHandler);

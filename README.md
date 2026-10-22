@@ -146,15 +146,15 @@ Details in [`apps/api/README.md`](apps/api/README.md).
 Needs `MQTT_URL`.
 
 1. Add the topic to `topics` in `packages/contracts/src/mqtt/index.ts` (`<domain>/<id>/<event>`, lowercase, `+` for one wildcard level) with its payload schema.
-2. Subscribe, for example in a plugin: `await app.mqtt.subscribe('sensorReading', ({ payload, params }) => app.log.info({ payload, params }, 'reading'));`. Invalid payloads are logged and dropped.
-3. Publish: `await app.mqtt.publish('sensorReading', ['sensor-1'], { deviceId: 'sensor-1', value: 21.5, unit: '°C', ts: new Date().toISOString() });`. An invalid payload throws before it reaches the broker.
+2. Subscribe, for example in a plugin: `await app.mqtt.subscribe('reading', ({ payload, params }) => app.log.info({ payload, params }, 'reading'));`. Invalid payloads are logged and dropped.
+3. Publish: `await app.mqtt.publish('reading', ['sensor-1'], { deviceId: 'sensor-1', value: 21.5, unit: '°C', ts: new Date().toISOString() });`. An invalid payload throws before it reaches the broker.
 4. Guard it with `app.hasDecorator('mqtt')`, since the plugin is skipped without `MQTT_URL`.
 
 ### Show live MQTT data in a view
 
 Needs `MQTT_URL` and a topic from the recipe above. The API streams every valid message to the browser at `GET /api/events`.
 
-1. In the view: `const { latest, messages, connected } = useLiveTopic('sensorReading');` (from `@/composables/useLiveTopic`). Payloads are validated with the contract schema, invalid ones are dropped and counted in `dropped`.
+1. In the view: `const { latest, messages, connected } = useLiveTopic('reading');` (from `@/composables/useLiveTopic`). Payloads are validated with the contract schema, invalid ones are dropped and counted in `dropped`.
 2. Render `latest` or `messages` (newest first, 50 by default, `{ max }` to change). `connected` is false while the stream reconnects.
 3. Try it: `mosquitto_pub -h localhost -t sensors/s1/reading -m '{"deviceId":"s1","value":21.5,"unit":"°C","ts":"2026-01-01T00:00:00.000Z"}'`.
 

@@ -11,7 +11,7 @@ interface LiveTopicOptions {
  * Live, typed messages of one MQTT topic, streamed by the API (`GET /api/events`).
  * Payloads are validated with the contract schema, and invalid ones are dropped.
  *
- *   const { latest, messages, connected } = useLiveTopic('sensorReading');
+ *   const { latest, messages, connected } = useLiveTopic('reading');
  */
 export function useLiveTopic<K extends TopicKey>(key: K, options: LiveTopicOptions = {}) {
   const { max = 50 } = options;
