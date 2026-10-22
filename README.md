@@ -176,6 +176,22 @@ Needs `MQTT_URL`.
 
 Broker credentials: the broker has no anonymous access. On every start the Mosquitto container builds its password file (`mosquitto_passwd`) from `MQTT_API_PASSWORD` and `MQTT_DEVICE_PASSWORD`, so there is no file to manage; change a password in `.env.prod` and run `up -d` again. Devices connect to `<host>:1883` as user `device`. There is no WebSocket listener: the browser gets live data through the API.
 
+### Prebuilt images (GHCR)
+
+CI builds the API and web images for `linux/amd64` and `linux/arm64` ([`images.yml`](.github/workflows/images.yml)) and pushes them from `main` to `ghcr.io/freunde-der-socken/hackathon-fulda-2026-api` and `-web`, tagged `latest` and with the commit SHA. A host can pull them instead of building:
+
+```sh
+docker compose -f compose.prod.yaml --env-file .env.prod pull
+docker compose -f compose.prod.yaml --env-file .env.prod up -d --wait
+```
+
+`IMAGE_TAG` in `.env.prod` pins a commit SHA instead of `latest`. `IMAGE_PREFIX` points at another registry or fork.
+
+- The arm64 images need a **64-bit** Raspberry Pi OS (`uname -m` prints `aarch64`).
+- While the repo is private, so are the packages: run `docker login ghcr.io` once on the Pi and the Azure VM, with a GitHub token that only has `read:packages`. A public repo makes the packages public too (set their visibility in the package settings), and no login is needed.
+- Check the platforms: `docker buildx imagetools inspect ghcr.io/freunde-der-socken/hackathon-fulda-2026-api:latest`.
+- Pull requests that touch app sources, the lockfile or a Dockerfile build both images (without pushing), so a broken Dockerfile fails there.
+
 The API applies the SQL migrations in `apps/api/drizzle/` itself when it starts in production. Caddy keeps its certificates in the `caddy-data` volume. `docker compose -f compose.prod.yaml --env-file .env.prod down -v` deletes all data.
 
 ## Conventions
