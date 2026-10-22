@@ -283,6 +283,14 @@ docker compose -f compose.prod.yaml --env-file .env.prod up -d --wait
 
 The API applies the SQL migrations in `apps/api/drizzle/` itself when it starts in production. Caddy keeps its certificates in the `caddy-data` volume. `docker compose -f compose.prod.yaml --env-file .env.prod down -v` deletes all data.
 
+## Working with AI
+
+The repo is set up so an AI agent knows the stack and the conventions. [`AGENTS.md`](AGENTS.md) is the one source of instructions (Claude Code reads it through the import in `CLAUDE.md`; Copilot, Cursor and Codex read `AGENTS.md` directly).
+
+- **Skills** (Claude Code, [`.claude/skills/`](.claude/skills)): `add-endpoint`, `add-table`, `add-mqtt-topic`, `add-view`, `add-ui-component` and `verify`. They follow the [Recipes](#recipes) above. Ask for them by name, for example "use add-endpoint to add GET /api/greeting".
+- **Rules**: small PRs. Run `verify` (the CI gate) before opening a PR. A human reviews AI-written code before it is merged. No secrets in prompts. Don't paste `.env` contents.
+- **Marking AI-assisted work** (provisional, until we have checked the organizers' AI rules): tick the checkbox in the PR template. Commit trailers (`Co-Authored-By`) and the PR footer from the agent are welcome.
+
 ## Conventions
 
 - **Branches**: `<type>/<issue>-<short-name>`, with type `feat`, `fix`, `docs`, `chore` or `ci` (for example `feat/12-login-page`).

@@ -10,3 +10,4 @@ Closes #
 - [ ] Shared schemas and types live in `@repo/contracts`
 - [ ] Migrations generated and committed (`pnpm --filter @repo/api db:generate`), if the DB schema changed
 - [ ] Screenshot added, if the UI changed
+- [ ] AI-assisted, and a human reviewed every changed line (delete if not)
