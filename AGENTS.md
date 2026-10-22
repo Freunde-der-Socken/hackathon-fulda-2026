@@ -1,6 +1,6 @@
 # Repository guide
 
-pnpm + Turborepo monorepo: `apps/web` (Vue 3, Vite, Tailwind v4, shadcn-vue), `apps/api` (Fastify 5, Zod type provider, optional Drizzle/Postgres and MQTT), `packages/contracts` (Zod schemas shared by both), `packages/oxc-config`, `packages/typescript-config`. The README has the commands, ports, env vars and recipes. App details are in `apps/*/README.md` and `packages/contracts/README.md`.
+pnpm + Turborepo monorepo: `apps/web` (Vue 3, Vite, Tailwind v4, shadcn-vue), `apps/api` (Fastify 5, Zod type provider, optional Drizzle/Postgres and MQTT), `apps/rnd` (TensorFlow.js R&D workspace), `packages/contracts` (Zod schemas shared by both), `packages/ml` (model save/load helpers), `packages/oxc-config`, `packages/typescript-config`. The README has the commands, ports, env vars and recipes. App details are in `apps/*/README.md` and `packages/contracts/README.md`.
 
 ## Rules
 
@@ -13,6 +13,7 @@ pnpm + Turborepo monorepo: `apps/web` (Vue 3, Vite, Tailwind v4, shadcn-vue), `a
 
 - **Schemas and types used by both sides**: `packages/contracts/src/<domain>.ts`, exported from `index.ts`. Zod only, hand-written (not derived from DB tables), dates as ISO strings. MQTT topics and payloads are only defined in `contracts/src/mqtt/`.
 - **API**: routes in `apps/api/src/routes` as `FastifyPluginAsyncZod` using contract schemas for `querystring`, `params`, `body` and `response`. Registered in `routes/index.ts` under `/api`. Plugins in `plugins/`. Database schema in `src/db/schema`, migrations in `apps/api/drizzle` (generate with `db:generate`, never edit by hand). Errors are `ErrorResponse`. No `console.*`: use `app.log` / `request.log`.
+- **R&D / ML**: TensorFlow.js with the WASM backend (CPU fallback), never `@tensorflow/tfjs-node` (no Node 24 or arm64 support). Model I/O helpers go in `packages/ml`, experiments in `apps/rnd`. Keep the `@tensorflow/*` versions identical via the catalog. Details in `apps/rnd/README.md`.
 - **Optional services**: `app.db` and `app.mqtt` exist only when `DATABASE_URL` / `MQTT_URL` are set. Guard with `app.hasDecorator('db')` / `('mqtt')`.
 - **Web**: views in `src/views`, routes in `src/router`, navigation entries in `src/lib/navigation.ts`, API calls through `src/lib/api.ts` (`apiGet`, `apiPost`, ... validate with the contract schema). shadcn-vue components in `src/components/ui` (see the README for the `cn` import fix after `add`). Mobile first: the layout uses bottom tabs below `md` and a sidebar above.
 - Git: branches `<type>/<issue>-<name>`, small PRs with `Closes #<issue>`.

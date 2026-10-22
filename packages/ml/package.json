@@ -1,0 +1,26 @@
+{
+  "name": "@repo/ml",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
+  },
+  "dependencies": {
+    "@tensorflow/tfjs": "catalog:",
+    "@tensorflow/tfjs-backend-wasm": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/oxc-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

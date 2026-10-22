@@ -10,8 +10,10 @@ A TypeScript monorepo (pnpm workspaces + Turborepo) for a Vue 3 web app and a Fa
 apps/
   web/                    Vue 3 + Vite + Tailwind + shadcn-vue       README: apps/web/README.md
   api/                    Fastify API, Drizzle (Postgres), MQTT      README: apps/api/README.md
+  rnd/                    TensorFlow.js R&D workspace (smoke test)   README: apps/rnd/README.md
 packages/
   contracts/              Zod schemas shared by web and API          README: packages/contracts/README.md
+  ml/                     Model save/load helpers (TensorFlow.js)   README: packages/ml/README.md
   oxc-config/             oxlint presets and the oxfmt config        README: packages/oxc-config/README.md
   typescript-config/      tsconfig presets (base, node, vue)         README: packages/typescript-config/README.md
 compose.yaml              Postgres and Mosquitto for local development
