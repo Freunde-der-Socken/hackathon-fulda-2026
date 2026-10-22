@@ -150,6 +150,14 @@ Needs `MQTT_URL`.
 3. Publish: `await app.mqtt.publish('sensorReading', ['sensor-1'], { deviceId: 'sensor-1', value: 21.5, unit: '°C', ts: new Date().toISOString() });`. An invalid payload throws before it reaches the broker.
 4. Guard it with `app.hasDecorator('mqtt')`, since the plugin is skipped without `MQTT_URL`.
 
+### Show live MQTT data in a view
+
+Needs `MQTT_URL` and a topic from the recipe above. The API streams every valid message to the browser at `GET /api/events`.
+
+1. In the view: `const { latest, messages, connected } = useLiveTopic('sensorReading');` (from `@/composables/useLiveTopic`). Payloads are validated with the contract schema, invalid ones are dropped and counted in `dropped`.
+2. Render `latest` or `messages` (newest first, 50 by default, `{ max }` to change). `connected` is false while the stream reconnects.
+3. Try it: `mosquitto_pub -h localhost -t sensors/s1/reading -m '{"deviceId":"s1","value":21.5,"unit":"°C","ts":"2026-01-01T00:00:00.000Z"}'`.
+
 ### Test on your phone
 
 1. Put the phone and the computer on the same Wi-Fi.
