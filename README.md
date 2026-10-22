@@ -157,6 +157,27 @@ Needs `MQTT_URL`.
 3. Open `http://<that IP>:5173` on the phone. The `/api` proxy works the same way, so the API needs no change.
 4. On WSL the address Vite prints is the WSL one. Forward the port from Windows (`netsh interface portproxy add v4tov4 listenport=5173 connectaddress=<WSL IP> connectport=5173`, as admin) and allow it in the Windows firewall.
 
+## Run the production build
+
+`compose.prod.yaml` runs web (Caddy), API, Postgres and Mosquitto from images built out of this repo, on any machine with Docker. It is separate from the development `compose.yaml`.
+
+1. `cp .env.prod.example .env.prod` and fill in the three secrets (`openssl rand -hex 24` works for each). Compose refuses to start while one is missing.
+2. `docker compose -f compose.prod.yaml --env-file .env.prod up --build -d --wait`
+3. Open <http://localhost> (web) and <http://localhost/api/health>, which should report `db: "ok"` and `mqtt: "ok"`.
+
+| Variable                                  | Meaning                                                                                     |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `POSTGRES_PASSWORD`                       | Required. Password of the database user (`POSTGRES_USER`, `POSTGRES_DB` are optional)       |
+| `MQTT_API_PASSWORD`                       | Required. Password of the broker user `api`. URL-safe characters only (it is in `MQTT_URL`) |
+| `MQTT_DEVICE_PASSWORD`                    | Required. Password of the broker user `device`, shared by all devices                       |
+| `SITE_ADDRESS`                            | `:80` (default) is plain HTTP. A domain name makes Caddy fetch an HTTPS certificate         |
+| `CORS_ORIGIN`                             | Only needed if the browser loads the app from another origin than the web container         |
+| `WEB_PORT`, `WEB_HTTPS_PORT`, `MQTT_PORT` | Published ports (80, 443, 1883)                                                             |
+
+Broker credentials: the broker has no anonymous access. On every start the Mosquitto container builds its password file (`mosquitto_passwd`) from `MQTT_API_PASSWORD` and `MQTT_DEVICE_PASSWORD`, so there is no file to manage; change a password in `.env.prod` and run `up -d` again. Devices connect to `<host>:1883` as user `device`. There is no WebSocket listener: the browser gets live data through the API.
+
+The API applies the SQL migrations in `apps/api/drizzle/` itself when it starts in production. Caddy keeps its certificates in the `caddy-data` volume. `docker compose -f compose.prod.yaml --env-file .env.prod down -v` deletes all data.
+
 ## Conventions
 
 - **Branches**: `<type>/<issue>-<short-name>`, with type `feat`, `fix`, `docs`, `chore` or `ci` (for example `feat/12-login-page`).
