@@ -10,3 +10,9 @@
 *.woff2 binary
 *.ttf binary
 *.pdf binary
+
+# Registry files with one entry per line: when two branches both append, keep both sides (see README, "Merge conflicts").
+packages/contracts/src/index.ts merge=union
+apps/api/src/db/schema/index.ts merge=union
+apps/api/src/routes/index.ts merge=union
+apps/web/src/lib/navigation.ts merge=union

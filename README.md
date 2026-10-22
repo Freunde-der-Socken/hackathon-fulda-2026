@@ -185,6 +185,7 @@ The API applies the SQL migrations in `apps/api/drizzle/` itself when it starts 
 - **Where code goes**: Zod schemas and types used by both sides go in `packages/contracts`. Database schema stays in the API (`apps/api/src/db/schema`). UI components go in `apps/web/src/components` (shadcn-vue ones in `components/ui`). Don't import from `apps/*` into `packages/*`.
 - **Dependencies**: add shared ones through the pnpm catalog (see [Toolchain](#toolchain)).
 - **API logging**: use `app.log` / `request.log`, not `console.*` (lint fails on it).
+- **Merge conflicts**: the registry files (`packages/contracts/src/index.ts`, `apps/api/src/db/schema/index.ts`, `apps/api/src/routes/index.ts`, `apps/web/src/lib/navigation.ts`) use git's union merge (see [`.gitattributes`](.gitattributes)), so two branches that both append a line merge without a conflict. Keep one entry per line in them. If both sides add the same line it appears twice: `pnpm lint` / `pnpm typecheck` catch that, delete the duplicate. `apps/web/src/router/index.ts` and the MQTT `topics` map span several lines, so resolve conflicts there by hand. For a `pnpm-lock.yaml` conflict, merge the `package.json` changes, run `pnpm install` (it resolves the lockfile on its own) and commit the result.
 - AI assistants: see [`AGENTS.md`](AGENTS.md) (`CLAUDE.md` imports it).
 
 ## Toolchain
