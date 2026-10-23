@@ -4,7 +4,11 @@
     "Vue.volar",
     "bradlc.vscode-tailwindcss",
     "ms-azuretools.vscode-docker",
-    "github.vscode-github-actions"
+    "github.vscode-github-actions",
+    "vitest.explorer",
+    "yoavbls.pretty-ts-errors",
+    "usernamehw.errorlens",
+    "ms-ossdata.vscode-pgsql"
   ],
   "unwantedRecommendations": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
 }
