@@ -1,4 +1,5 @@
 import tailwindcss from '@tailwindcss/vite';
+import basicSsl from '@vitejs/plugin-basic-ssl';
 import vue from '@vitejs/plugin-vue';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
@@ -9,7 +10,9 @@ export default defineConfig(({ mode }) => {
   const rootDir = fileURLToPath(new URL('../..', import.meta.url));
   const env = { ...loadEnv(mode, rootDir, ''), ...loadEnv(mode, process.cwd(), '') };
   return {
-    plugins: [vue(), tailwindcss()],
+    // `--mode https` (dev:https) serves a self-signed certificate: phones only grant the
+    // microphone, camera and sensors to secure origins, and a LAN IP over http is not one.
+    plugins: [vue(), tailwindcss(), ...(mode === 'https' ? [basicSsl()] : [])],
     resolve: {
       alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
     },
