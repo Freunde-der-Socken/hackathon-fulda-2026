@@ -5,10 +5,14 @@ import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { apiPost } from '@/lib/api';
 import { MIN_DB, SPL_OFFSET, toSpl, useMicLevel } from '@/composables/useMicLevel';
 
 const SEND_INTERVAL_MS = 1000;
+// Plant from the dev seed, so readings are accepted without setting anything up
+const DEMO_PLANT_ID = '6f1c0b6e-2a4d-4c43-9a8e-0d6a2f1b7c11';
 
 const { level, peak, running, start, stop, takeAverage } = useMicLevel();
 const wakeLock = useWakeLock();
@@ -18,6 +22,8 @@ const sensorId = useLocalStorage(
   'noise-sensor-id',
   () => `phone-noise-${Math.random().toString(36).slice(2, 8)}`,
 );
+// The API only accepts plants that are mapped to a class
+const plantId = useLocalStorage('noise-plant-id', DEMO_PLANT_ID);
 const sending = useLocalStorage('noise-sending', true);
 const lastSent = ref<string>();
 const sendFailed = ref(false);
@@ -54,6 +60,7 @@ useIntervalFn(async () => {
       SensorReadingInput,
       {
         sensorId: sensorId.value,
+        plantId: plantId.value,
         value: Math.round(toSpl(average.level) * 10) / 10,
         unit: 'dB',
         recordedAt: new Date().toISOString(),
@@ -141,6 +148,10 @@ useIntervalFn(async () => {
         </label>
         <div>
           Sensor id: <code>{{ sensorId }}</code>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <Label for="noise-plant-id">Plant id</Label>
+          <Input id="noise-plant-id" v-model.trim="plantId" class="font-mono" />
         </div>
         <div class="text-muted-foreground">
           <template v-if="sendFailed">Sending failed, retrying …</template>
