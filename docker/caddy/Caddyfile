@@ -3,7 +3,6 @@
 	encode zstd gzip
 
 	handle /api/* {
-		# Caddy flushes text/event-stream responses immediately, so SSE needs no extra config
 		reverse_proxy {$API_UPSTREAM:api:3000}
 	}
 

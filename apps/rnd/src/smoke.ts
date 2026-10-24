@@ -10,7 +10,6 @@ const print = (line: string) => process.stdout.write(`${line}\n`);
 
 const Env = z.object({
   DATABASE_URL: z.url().optional(),
-  MQTT_URL: z.url().optional(),
 });
 // Same rule as the API: an empty value means "unset"
 const env = Env.parse(Object.fromEntries(Object.entries(process.env).filter(([, v]) => v !== '')));
@@ -18,7 +17,6 @@ const env = Env.parse(Object.fromEntries(Object.entries(process.env).filter(([, 
 const DEFAULT_PORTS: Record<string, number> = {
   'postgres:': 5432,
   'postgresql:': 5432,
-  'mqtt:': 1883,
 };
 
 function checkTcp(name: string, value: string | undefined): Promise<void> {
@@ -81,4 +79,3 @@ print(`backend: ${backend}`);
 print('save/load/predict: ok');
 print('fit: ok');
 await checkTcp('DATABASE_URL', env.DATABASE_URL);
-await checkTcp('MQTT_URL', env.MQTT_URL);

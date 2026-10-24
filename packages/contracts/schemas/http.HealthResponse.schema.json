@@ -16,21 +16,12 @@
         "down",
         "disabled"
       ]
-    },
-    "mqtt": {
-      "type": "string",
-      "enum": [
-        "ok",
-        "down",
-        "disabled"
-      ]
     }
   },
   "required": [
     "status",
     "version",
-    "db",
-    "mqtt"
+    "db"
   ],
   "additionalProperties": false,
   "title": "HealthResponse"

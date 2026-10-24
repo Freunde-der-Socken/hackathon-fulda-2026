@@ -21,7 +21,7 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "passThroughEnv": ["DATABASE_URL", "MQTT_URL"]
+      "passThroughEnv": ["DATABASE_URL"]
     },
     "test": {
       "dependsOn": ["transit"]

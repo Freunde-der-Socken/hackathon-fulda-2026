@@ -8,13 +8,11 @@
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": { "moby": false },
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
-  "forwardPorts": [5173, 3000, "postgres:5432", "mosquitto:1883", "mosquitto:9001"],
+  "forwardPorts": [5173, 3000, "postgres:5432"],
   "portsAttributes": {
     "5173": { "label": "web", "onAutoForward": "openBrowser" },
     "3000": { "label": "api" },
-    "postgres:5432": { "label": "postgres", "onAutoForward": "silent" },
-    "mosquitto:1883": { "label": "mqtt", "onAutoForward": "silent" },
-    "mosquitto:9001": { "label": "mqtt-ws", "onAutoForward": "silent" }
+    "postgres:5432": { "label": "postgres", "onAutoForward": "silent" }
   },
   // The store volume is created root-owned, so hand it to `node` before pnpm uses it.
   // confirm-modules-purge=false: a node_modules installed on the host gets replaced without a TTY prompt.

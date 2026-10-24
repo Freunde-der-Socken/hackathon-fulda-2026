@@ -33,11 +33,8 @@ services:
       NODE_ENV: production
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost}
       DATABASE_URL: postgres://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.prod}@postgres:5432/${POSTGRES_DB:-app}
-      MQTT_URL: mqtt://api:${MQTT_API_PASSWORD:?Set MQTT_API_PASSWORD in .env.prod}@mosquitto:1883
     depends_on:
       postgres:
-        condition: service_healthy
-      mosquitto:
         condition: service_healthy
 
   postgres:
@@ -55,39 +52,7 @@ services:
       timeout: 3s
       retries: 10
 
-  mosquitto:
-    image: eclipse-mosquitto:2
-    restart: unless-stopped
-    environment:
-      MQTT_API_PASSWORD: ${MQTT_API_PASSWORD:?Set MQTT_API_PASSWORD in .env.prod}
-      MQTT_DEVICE_PASSWORD: ${MQTT_DEVICE_PASSWORD:?Set MQTT_DEVICE_PASSWORD in .env.prod}
-    # Builds the password file from the env on every start, then runs the broker
-    entrypoint:
-      - sh
-      - -c
-      - |
-        rm -f /mosquitto/passwd &&
-        mosquitto_passwd -b -c /mosquitto/passwd api "$$MQTT_API_PASSWORD" &&
-        mosquitto_passwd -b /mosquitto/passwd device "$$MQTT_DEVICE_PASSWORD" &&
-        chown mosquitto /mosquitto/passwd &&
-        exec mosquitto -c /mosquitto/config/mosquitto.conf
-    ports:
-      - '${MQTT_PORT:-1883}:1883' # devices
-    volumes:
-      - ./docker/mosquitto/mosquitto.prod.conf:/mosquitto/config/mosquitto.conf:ro
-      - mosquitto-data:/mosquitto/data
-    healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'mosquitto_pub -u api -P "$$MQTT_API_PASSWORD" -t healthcheck -m ok -i healthcheck',
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
 volumes:
   postgres-data:
-  mosquitto-data:
   caddy-data:
   caddy-config:

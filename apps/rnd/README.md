@@ -6,7 +6,7 @@ Workspace for the R&D team. It is a scaffold: dependencies, a smoke test and no 
 pnpm --filter @repo/rnd smoke
 ```
 
-The smoke test selects the WASM backend, builds a tiny model in memory, saves it with `saveModel`, loads it back with `loadModel`, predicts, runs a 2-epoch `fit`, and prints the backend. It also checks that `DATABASE_URL` and `MQTT_URL` (read from `.env` like the API) accept a TCP connection, and skips them when unset.
+The smoke test selects the WASM backend, builds a tiny model in memory, saves it with `saveModel`, loads it back with `loadModel`, predicts, runs a 2-epoch `fit`, and prints the backend. It also checks that `DATABASE_URL` (read from `.env` like the API) accepts a TCP connection, and skips it when unset.
 
 ## Backend: WASM, not tfjs-node
 

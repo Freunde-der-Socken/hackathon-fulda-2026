@@ -18,20 +18,5 @@ services:
       timeout: 3s
       retries: 10
 
-  mosquitto:
-    image: eclipse-mosquitto:2
-    ports:
-      - '${MQTT_PORT:-1883}:1883' # MQTT (API, devices)
-      - '${MQTT_WS_PORT:-9001}:9001' # MQTT over WebSockets (browser)
-    volumes:
-      - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-      - mosquitto-data:/mosquitto/data
-    healthcheck:
-      test: ['CMD', 'mosquitto_sub', '-t', '$$SYS/#', '-C', '1', '-i', 'healthcheck', '-W', '3']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
 volumes:
   postgres-data:
-  mosquitto-data:

@@ -6,7 +6,6 @@ Zod schemas and inferred types shared by `apps/web` and `apps/api`, imported as 
 | ------------- | -------------------------------------------------------------------------------- |
 | `common.ts`   | `Id`, `Timestamp`, `IdParams`, `PaginationQuery`, `Paginated()`, `ErrorResponse` |
 | `health.ts`   | `HealthResponse`                                                                 |
-| `mqtt/`       | MQTT `topics` (pattern to payload schema), `buildTopic` / `matchTopic`           |
 | `<domain>.ts` | One file per feature area, re-exported from `index.ts`                           |
 
 ```ts
@@ -20,12 +19,9 @@ export type CreateTodoBody = z.infer<typeof CreateTodoBody>;
 
 Firmware (C/C++, MicroPython) can't import Zod, so every schema is also generated as JSON Schema (draft 2020-12) into [`schemas/`](schemas/). The files are committed, so you can read them on GitHub.
 
-| File                          | Contains                                                                       |
-| ----------------------------- | ------------------------------------------------------------------------------ |
-| `mqtt.<topicKey>.schema.json` | Payload of one entry of `topics`; `title` holds the topic pattern              |
-| `http.<Name>.schema.json`     | Every other schema exported from `index.ts` (params, query, bodies, responses) |
+There is one file per schema exported from `index.ts` (params, query, bodies, responses), named `http.<Name>.schema.json`.
 
-Use them as the reference for payload structs, or to validate test messages, e.g. `check-jsonschema --schemafile schemas/mqtt.<topicKey>.schema.json message.json`.
+Use them as the reference for request and response structs, or to validate test bodies, e.g. `check-jsonschema --schemafile schemas/http.<Name>.schema.json body.json`.
 
 After changing a Zod schema, run `pnpm --filter @repo/contracts schemas` and commit the result. CI regenerates the files and fails on any diff. Don't edit them by hand; they are excluded from `pnpm fmt`.
 

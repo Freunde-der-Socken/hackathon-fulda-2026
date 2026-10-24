@@ -5,7 +5,5 @@ export const HealthResponse = z.object({
   version: z.string(),
   /** `disabled` when the API runs without DATABASE_URL */
   db: z.enum(['ok', 'down', 'disabled']),
-  /** `disabled` when the API runs without MQTT_URL */
-  mqtt: z.enum(['ok', 'down', 'disabled']),
 });
 export type HealthResponse = z.infer<typeof HealthResponse>;

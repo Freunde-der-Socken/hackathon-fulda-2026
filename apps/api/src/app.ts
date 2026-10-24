@@ -9,7 +9,6 @@ import { env } from './env';
 import { corsPlugin } from './plugins/cors';
 import { dbPlugin } from './plugins/db';
 import { errorHandlerPlugin } from './plugins/error-handler';
-import { mqttPlugin } from './plugins/mqtt';
 import { swaggerPlugin } from './plugins/swagger';
 import { routes } from './routes';
 
@@ -28,7 +27,6 @@ export async function buildApp() {
   await app.register(corsPlugin);
   await app.register(errorHandlerPlugin);
   await app.register(dbPlugin);
-  await app.register(mqttPlugin);
   // Registered before the routes so it sees them all
   await app.register(swaggerPlugin);
   await app.register(routes, { prefix: '/api' });
