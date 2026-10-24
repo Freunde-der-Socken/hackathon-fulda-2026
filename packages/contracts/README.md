@@ -5,6 +5,7 @@ Zod schemas and inferred types shared by `apps/web` and `apps/api`, imported as 
 | File          | Contains                                                                         |
 | ------------- | -------------------------------------------------------------------------------- |
 | `common.ts`   | `Id`, `Timestamp`, `IdParams`, `PaginationQuery`, `Paginated()`, `ErrorResponse` |
+| `demo.ts`     | `DEMO_PLANT_ID`, `DEMO_CLASS_ID`: the plant mapping the API seed always creates  |
 | `health.ts`   | `HealthResponse`                                                                 |
 | `<domain>.ts` | One file per feature area, re-exported from `index.ts`                           |
 

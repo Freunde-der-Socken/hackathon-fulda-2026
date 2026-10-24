@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SensorReading, SensorReadingInput } from '@repo/contracts';
+import { DEMO_PLANT_ID, SensorReading, SensorReadingInput } from '@repo/contracts';
 import { useIntervalFn, useLocalStorage, useWakeLock } from '@vueuse/core';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
@@ -54,6 +54,8 @@ useIntervalFn(async () => {
       SensorReadingInput,
       {
         sensorId: sensorId.value,
+        // No plant picker yet, so every phone reports for the seeded demo plant
+        plantId: DEMO_PLANT_ID,
         value: Math.round(toSpl(average.level) * 10) / 10,
         unit: 'dB',
         recordedAt: new Date().toISOString(),

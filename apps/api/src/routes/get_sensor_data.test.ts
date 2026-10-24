@@ -1,3 +1,4 @@
+import { DEMO_PLANT_ID } from '@repo/contracts';
 import { afterAll, describe, expect, it } from 'vitest';
 import { buildApp } from '../app';
 
@@ -19,7 +20,7 @@ describe('/api/sensor-data', () => {
       url: '/api/sensor-data',
       payload: {
         sensorId: 'moisture-1',
-        plantId: '6f1c0b6e-2a4d-4c43-9a8e-0d6a2f1b7c11',
+        plantId: DEMO_PLANT_ID,
         value: 42,
       },
     });
