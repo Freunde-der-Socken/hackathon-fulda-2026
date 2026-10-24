@@ -12,6 +12,7 @@ export const router = createRouter({
       component: () => import('@/views/SensorsView.vue'),
       meta: { fullWidth: true },
     },
+    { path: '/classes', name: 'classes', component: () => import('@/views/ClassesView.vue') },
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',

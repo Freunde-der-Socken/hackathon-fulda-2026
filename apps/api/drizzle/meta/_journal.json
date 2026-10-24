@@ -8,6 +8,13 @@
       "when": 1792872735622,
       "tag": "0000_sensor_readings",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792880124076,
+      "tag": "0001_classes_and_plants",
+      "breakpoints": true
     }
   ]
 }

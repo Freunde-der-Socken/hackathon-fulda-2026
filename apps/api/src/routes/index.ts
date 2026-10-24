@@ -1,4 +1,5 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
+import { classroom } from './classroom';
 import { sensorData } from './get_sensor_data';
 import { health } from './health';
 
@@ -10,4 +11,5 @@ import { health } from './health';
 export const routes: FastifyPluginAsyncZod = async (app) => {
   await app.register(health);
   if (app.hasDecorator('db')) await app.register(sensorData);
+  if (app.hasDecorator('db')) await app.register(classroom);
 };
