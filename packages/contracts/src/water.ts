@@ -14,6 +14,8 @@ export const WATER_RULES = {
   silentPhaseMax: 10,
   /** A noise reading (unit `dB`) at or below this counts as quiet. */
   quietDb: 55,
+  /** Water a plant needs to bloom fully in one measuring phase. Growth resets every phase. */
+  fullBloom: { day: 20, week: 80 },
 } as const;
 
 /** Where water came from: a teacher button or a silent phase. */

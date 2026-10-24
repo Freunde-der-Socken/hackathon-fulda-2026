@@ -6,6 +6,7 @@ export const router = createRouter({
   routes: [
     { path: '/', name: 'home', component: HomeView },
     { path: '/lesson', name: 'lesson', component: () => import('@/views/LessonView.vue') },
+    { path: '/review', name: 'review', component: () => import('@/views/ReviewView.vue') },
     { path: '/noise', name: 'noise', component: () => import('@/views/NoiseView.vue') },
     {
       path: '/sensors',
