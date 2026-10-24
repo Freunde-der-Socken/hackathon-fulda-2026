@@ -69,7 +69,7 @@ Run them from the repo root.
 | `pnpm db:migrate`                               | Apply the SQL migrations in `apps/api/drizzle/`             |
 | `pnpm --filter @repo/api db:generate`           | Create a migration from schema changes                      |
 | `pnpm --filter @repo/api db:push` / `db:studio` | Sync the schema without a migration / open Drizzle Studio   |
-| `pnpm db:seed`                                  | Run `apps/api/src/db/seed.ts`                               |
+| `pnpm db:seed`                                  | Run the seed in `apps/api/src/db/seed-data.ts`              |
 
 ## Ports & URLs
 
@@ -244,7 +244,7 @@ docker compose -f compose.prod.yaml --env-file .env.prod up -d --wait
 - Check the platforms: `docker buildx imagetools inspect ghcr.io/freunde-der-socken/hackathon-fulda-2026-api:latest`.
 - Pull requests that touch app sources, the lockfile or a Dockerfile build both images (without pushing), so a broken Dockerfile fails there.
 
-The API applies the SQL migrations in `apps/api/drizzle/` itself when it starts in production. Caddy keeps its certificates in the `caddy-data` volume. `docker compose -f compose.prod.yaml --env-file .env.prod down -v` deletes all data.
+The API applies the SQL migrations in `apps/api/drizzle/` and runs the seed (`apps/api/src/db/seed-data.ts`) itself when it starts in production. Caddy keeps its certificates in the `caddy-data` volume. `docker compose -f compose.prod.yaml --env-file .env.prod down -v` deletes all data.
 
 ### Deploy to the Pi
 
