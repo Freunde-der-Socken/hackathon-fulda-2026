@@ -9,5 +9,5 @@ import { health } from './health';
 // if (app.hasDecorator('db')) await app.register(todoRoutes);
 export const routes: FastifyPluginAsyncZod = async (app) => {
   await app.register(health);
-  await app.register(sensorData);
+  if (app.hasDecorator('db')) await app.register(sensorData);
 };
