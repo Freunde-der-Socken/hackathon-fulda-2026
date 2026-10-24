@@ -1,32 +1,28 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { buildApp } from '../app';
 
+// Tests run without a database (see vitest.config.ts), so only the "disabled" case is covered here
 describe('/api/sensor-data', () => {
   const appPromise = buildApp();
   afterAll(async () => (await appPromise).close());
 
-  it('stores a reading and lists it', async () => {
+  it('is not registered without a database', async () => {
     const app = await appPromise;
-    const post = await app.inject({
-      method: 'POST',
-      url: '/api/sensor-data',
-      payload: { sensorId: 'temp-1', value: 21.5, unit: '°C' },
-    });
-    expect(post.statusCode).toBe(201);
-    expect(post.json()).toMatchObject({ sensorId: 'temp-1', value: 21.5, unit: '°C' });
-
-    const res = await app.inject({ url: '/api/sensor-data?sensorId=temp-1' });
-    expect(res.statusCode).toBe(200);
-    expect(res.json().items).toHaveLength(1);
+    const res = await app.inject({ url: '/api/sensor-data' });
+    expect(res.statusCode).toBe(404);
   });
 
-  it('rejects an invalid reading', async () => {
+  it('does not accept readings without a database', async () => {
     const app = await appPromise;
     const res = await app.inject({
       method: 'POST',
       url: '/api/sensor-data',
-      payload: { sensorId: 'temp-1', value: 'warm' },
+      payload: {
+        sensorId: 'moisture-1',
+        plantId: '6f1c0b6e-2a4d-4c43-9a8e-0d6a2f1b7c11',
+        value: 42,
+      },
     });
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(404);
   });
 });
