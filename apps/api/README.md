@@ -9,11 +9,18 @@ The database is optional: without `DATABASE_URL` the API starts, logs a warning,
 ```sh
 pnpm db:up        # Postgres from compose.yaml
 pnpm db:migrate   # apply the SQL files in apps/api/drizzle/ (fails until the first table is generated)
-pnpm --filter @repo/api db:seed   # fill src/db/seed.ts first
+pnpm db:seed      # run src/db/seed-data.ts (production runs it on every start)
 pnpm dev
 ```
 
 `DATABASE_URL` comes from `apps/api/.env` (see `.env.example`). Inside the devcontainer it is preset.
+
+The seed always creates a demo plant (`DEMO_PLANT_ID` from `@repo/contracts`), so readings can be posted right away:
+
+```sh
+curl -X POST localhost:3000/api/sensor-data -H 'content-type: application/json' \
+  -d '{"sensorId":"moisture-1","plantId":"6f1c0b6e-2a4d-4c43-9a8e-0d6a2f1b7c11","value":42}'
+```
 
 ### Add a table
 

@@ -57,6 +57,7 @@ Run them from the repo root.
 | ----------------------------------------------- | ----------------------------------------------------------- |
 | `pnpm dev`                                      | Web and API in watch mode (through Turbo)                   |
 | `pnpm --filter @repo/web dev:host`              | Web dev server reachable from other devices on your network |
+| `pnpm --filter @repo/web dev:https`             | Same over HTTPS (self-signed), for microphone/camera access |
 | `pnpm build`                                    | Typecheck and build everything                              |
 | `pnpm lint` / `pnpm typecheck`                  | oxlint / `tsc` and `vue-tsc` in every package               |
 | `pnpm test`                                     | Run the Vitest tests of every package once (not part of CI) |
@@ -68,7 +69,7 @@ Run them from the repo root.
 | `pnpm db:migrate`                               | Apply the SQL migrations in `apps/api/drizzle/`             |
 | `pnpm --filter @repo/api db:generate`           | Create a migration from schema changes                      |
 | `pnpm --filter @repo/api db:push` / `db:studio` | Sync the schema without a migration / open Drizzle Studio   |
-| `pnpm --filter @repo/api db:seed`               | Run `apps/api/src/db/seed.ts`                               |
+| `pnpm db:seed`                                  | Run the seed in `apps/api/src/db/seed-data.ts`              |
 
 ## Ports & URLs
 
@@ -145,7 +146,8 @@ Details in [`apps/api/README.md`](apps/api/README.md).
 1. Put the phone and the computer on the same Wi-Fi.
 2. `pnpm --filter @repo/web dev:host`, and note the `Network:` address that Vite prints (the LAN IP of your computer).
 3. Open `http://<that IP>:5173` on the phone. The `/api` proxy works the same way, so the API needs no change.
-4. On WSL the address Vite prints is the WSL one. Forward the port from Windows (`netsh interface portproxy add v4tov4 listenport=5173 connectaddress=<WSL IP> connectport=5173`, as admin) and allow it in the Windows firewall.
+4. Microphone, camera and motion sensors only work on secure origins, which a LAN IP over http is not. For those, run `pnpm --filter @repo/web dev:https` instead and open `https://<that IP>:5173`. The certificate is self-signed, so accept the browser warning once (Advanced → Proceed).
+5. On WSL the address Vite prints is the WSL one. Forward the port from Windows (`netsh interface portproxy add v4tov4 listenport=5173 connectaddress=<WSL IP> connectport=5173`, as admin) and allow it in the Windows firewall.
 
 ## Connect a device
 
@@ -242,7 +244,7 @@ docker compose -f compose.prod.yaml --env-file .env.prod up -d --wait
 - Check the platforms: `docker buildx imagetools inspect ghcr.io/freunde-der-socken/hackathon-fulda-2026-api:latest`.
 - Pull requests that touch app sources, the lockfile or a Dockerfile build both images (without pushing), so a broken Dockerfile fails there.
 
-The API applies the SQL migrations in `apps/api/drizzle/` itself when it starts in production. Caddy keeps its certificates in the `caddy-data` volume. `docker compose -f compose.prod.yaml --env-file .env.prod down -v` deletes all data.
+The API applies the SQL migrations in `apps/api/drizzle/` and runs the seed (`apps/api/src/db/seed-data.ts`) itself when it starts in production. Caddy keeps its certificates in the `caddy-data` volume. `docker compose -f compose.prod.yaml --env-file .env.prod down -v` deletes all data.
 
 ### Deploy to the Pi
 

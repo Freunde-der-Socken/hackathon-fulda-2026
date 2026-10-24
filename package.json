@@ -15,7 +15,8 @@
     "infra:reset": "docker compose down -v",
     "infra:logs": "docker compose logs -f",
     "db:up": "docker compose up -d --wait postgres",
-    "db:migrate": "pnpm --filter @repo/api db:migrate"
+    "db:migrate": "pnpm --filter @repo/api db:migrate",
+    "db:seed": "pnpm --filter @repo/api db:seed"
   },
   "devDependencies": {
     "@repo/oxc-config": "workspace:*",
