@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { type SensorReading, SensorReadingList } from '@repo/contracts';
 import { useIntervalFn, useLocalStorage } from '@vueuse/core';
-import { computed, ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { computed, ref, watch } from 'vue';
+import ClassPicker from '@/components/ClassPicker.vue';
 import SensorChart from '@/components/SensorChart.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { apiGet } from '@/lib/api';
 import { groupReadings, groupTitle, unitLabel } from '@/lib/sensor-series';
+import { useClassesStore } from '@/stores/classes';
 
 const REFRESH_MS = 5000;
 const RANGES = [
@@ -20,16 +24,28 @@ const readings = ref<SensorReading[]>();
 const error = ref<string>();
 const range = useLocalStorage<(typeof RANGES)[number]['id']>('sensors-range', 'all');
 const showOutliers = useLocalStorage('sensors-show-outliers', false);
+const { selectedId: classId } = storeToRefs(useClassesStore());
 
 async function load() {
+  const requested = classId.value;
   try {
-    readings.value = (await apiGet('/sensor-data', SensorReadingList)).items;
+    const query = new URLSearchParams({ classId: requested });
+    const list = await apiGet(`/sensor-data?${query}`, SensorReadingList);
+    // A slow response for the class picked before must not overwrite the new one
+    if (requested !== classId.value) return;
+    readings.value = list.items;
     error.value = undefined;
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Loading the sensor data failed';
   }
 }
 useIntervalFn(load, REFRESH_MS, { immediateCallback: true });
+
+// Clicking the active item would deselect it, which a time range can't be
+const setRange = (value: unknown) => {
+  const picked = RANGES.find((r) => r.id === value);
+  if (picked) range.value = picked.id;
+};
 
 // The range counts back from the newest reading, so old data still shows when devices are off
 const filtered = computed(() => {
@@ -57,6 +73,13 @@ function colorOf(unit: string, sensorId: string) {
   return `var(--series-${slots.get(key)! + 1})`;
 }
 
+watch(classId, () => {
+  readings.value = undefined;
+  // Another class has other sensors, so its colours start at the first series again
+  slots.clear();
+  void load();
+});
+
 const cards = computed(() =>
   groups.value.map((g) => {
     const series = g.series.map((s) => ({
@@ -80,22 +103,23 @@ const time = (t: number) => new Date(t).toLocaleTimeString();
 
 <template>
   <div class="flex flex-col gap-4">
-    <h1 class="text-2xl font-semibold">Sensors</h1>
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h1 class="text-2xl font-semibold">Sensors</h1>
+      <ClassPicker />
+    </div>
 
     <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-      <div class="inline-flex rounded-md border p-0.5" role="group" aria-label="Time range">
-        <button
-          v-for="r in RANGES"
-          :key="r.id"
-          type="button"
-          class="min-h-9 rounded px-3 transition-colors"
-          :class="r.id === range ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'"
-          :aria-pressed="r.id === range"
-          @click="range = r.id"
-        >
+      <ToggleGroup
+        type="single"
+        variant="outline"
+        :model-value="range"
+        aria-label="Time range"
+        @update:model-value="setRange"
+      >
+        <ToggleGroupItem v-for="r in RANGES" :key="r.id" :value="r.id" class="min-h-11 md:min-h-9">
           {{ r.label }}
-        </button>
-      </div>
+        </ToggleGroupItem>
+      </ToggleGroup>
       <label class="flex min-h-11 items-center gap-2">
         <input v-model="showOutliers" type="checkbox" class="size-5 accent-primary" />
         Show outliers
@@ -115,7 +139,8 @@ const time = (t: number) => new Date(t).toLocaleTimeString();
     </template>
 
     <p v-else-if="readings && !cards.length" class="text-sm text-muted-foreground">
-      No sensor data yet. Devices send it to <code>POST /api/sensor-data</code>.
+      No sensor data for this class yet. Its plant and the noise page send it to
+      <code>POST /api/sensor-data</code>.
     </p>
 
     <div class="flex flex-col gap-4">
