@@ -5,6 +5,8 @@ export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/', name: 'home', component: HomeView },
+    { path: '/lesson', name: 'lesson', component: () => import('@/views/LessonView.vue') },
+    { path: '/review', name: 'review', component: () => import('@/views/ReviewView.vue') },
     { path: '/noise', name: 'noise', component: () => import('@/views/NoiseView.vue') },
     {
       path: '/sensors',
@@ -12,6 +14,7 @@ export const router = createRouter({
       component: () => import('@/views/SensorsView.vue'),
       meta: { fullWidth: true },
     },
+    { path: '/classes', name: 'classes', component: () => import('@/views/ClassesView.vue') },
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',

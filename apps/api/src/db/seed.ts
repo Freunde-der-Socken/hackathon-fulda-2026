@@ -15,4 +15,4 @@ export const db = drizzle(client, { schema, casing: 'snake_case' });
 await seed(db);
 
 await client.end();
-process.stdout.write('Seeded the demo plant → class mapping.\n');
+process.stdout.write('Seeded the demo class, plant and their mapping.\n');

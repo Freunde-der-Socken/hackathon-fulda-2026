@@ -30,6 +30,33 @@ const health = await apiGet('/health', HealthResponse); // typed as HealthRespon
 
 Show errors with `toast.error(...)` from `vue-sonner`. The `<Toaster />` is already in the layout.
 
+## Design library
+
+Colours are tokens in `src/style.css`, set for light (`:root`) and dark (`.dark`). Use them as Tailwind classes (`bg-primary`, `text-water`, ...), never as hex values in components. Dark mode follows the system until someone uses the sun/moon button in the layout (`useDark`).
+
+| Token                       | Use it for                                                                                   |
+| --------------------------- | -------------------------------------------------------------------------------------------- |
+| `primary`                   | The plant and the main action on a page. Green is a stand-in until the team picks its colour |
+| `water`                     | Water the class earns: amounts, progress, the award buttons                                  |
+| `warning`                   | Something to act on soon, e.g. the air getting worse                                         |
+| `destructive`               | Errors and actions that delete something                                                     |
+| `muted` / `accent`          | Quiet surfaces and hover states                                                              |
+| `--series-1` … `--series-8` | Chart lines, in fixed order (see `SensorsView.vue`)                                          |
+
+| Component              | Use it for                                                           |
+| ---------------------- | -------------------------------------------------------------------- |
+| `Button`               | Actions. `size="lg"` for the big touch targets on the lesson page    |
+| `Card`                 | One topic per card: a chart, a counter, a form                       |
+| `ToggleGroup`          | Picking one of a few options that are all visible, e.g. a time range |
+| `Select`               | Picking one of many, e.g. the class                                  |
+| `Tabs`                 | Switching between views of the same data                             |
+| `Badge`                | Short status labels, e.g. "connected" or a plant's mode              |
+| `Progress`             | A value towards a goal, e.g. water towards a full bloom              |
+| `Dialog` / `Sheet`     | Forms that need focus (Dialog), more navigation on phones (Sheet)    |
+| `Input` / `Label`      | Form fields, always with a label                                     |
+| `Skeleton`             | Placeholders while data loads                                        |
+| `toast` (`vue-sonner`) | Errors and short confirmations                                       |
+
 ## Add a shadcn-vue component
 
 ```sh

@@ -2,12 +2,14 @@
 
 Zod schemas and inferred types shared by `apps/web` and `apps/api`, imported as TypeScript source (no build step).
 
-| File          | Contains                                                                         |
-| ------------- | -------------------------------------------------------------------------------- |
-| `common.ts`   | `Id`, `Timestamp`, `IdParams`, `PaginationQuery`, `Paginated()`, `ErrorResponse` |
-| `demo.ts`     | `DEMO_PLANT_ID`, `DEMO_CLASS_ID`: the plant mapping the API seed always creates  |
-| `health.ts`   | `HealthResponse`                                                                 |
-| `<domain>.ts` | One file per feature area, re-exported from `index.ts`                           |
+| File           | Contains                                                                              |
+| -------------- | ------------------------------------------------------------------------------------- |
+| `classroom.ts` | `SchoolClass`, `Plant` and the bodies to create them and to assign a plant to a class |
+| `common.ts`    | `Id`, `Timestamp`, `IdParams`, `PaginationQuery`, `Paginated()`, `ErrorResponse`      |
+| `demo.ts`      | `DEMO_PLANT_ID`, `DEMO_CLASS_ID`: the plant mapping the API seed always creates       |
+| `water.ts`     | `WATER_RULES` (placeholder amounts), `WaterEvent`, `SilentPhase`, `WaterSummary`      |
+| `health.ts`    | `HealthResponse`                                                                      |
+| `<domain>.ts`  | One file per feature area, re-exported from `index.ts`                                |
 
 ```ts
 export const Todo = z.object({ id: Id, title: z.string(), createdAt: Timestamp });
