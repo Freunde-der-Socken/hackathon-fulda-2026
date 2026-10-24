@@ -68,7 +68,7 @@ Run them from the repo root.
 | `pnpm db:migrate`                               | Apply the SQL migrations in `apps/api/drizzle/`             |
 | `pnpm --filter @repo/api db:generate`           | Create a migration from schema changes                      |
 | `pnpm --filter @repo/api db:push` / `db:studio` | Sync the schema without a migration / open Drizzle Studio   |
-| `pnpm --filter @repo/api db:seed`               | Run `apps/api/src/db/seed.ts`                               |
+| `pnpm db:seed`                                  | Run `apps/api/src/db/seed.ts`                               |
 
 ## Ports & URLs
 

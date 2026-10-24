@@ -9,7 +9,7 @@ The database is optional: without `DATABASE_URL` the API starts, logs a warning,
 ```sh
 pnpm db:up        # Postgres from compose.yaml
 pnpm db:migrate   # apply the SQL files in apps/api/drizzle/ (fails until the first table is generated)
-pnpm --filter @repo/api db:seed   # fill src/db/seed.ts first
+pnpm db:seed      # run src/db/seed.ts
 pnpm dev
 ```
 
