@@ -1,0 +1,78 @@
+name: Deploy
+
+# Deploys the images of a `main` commit to the Raspberry Pi. Runs on the self-hosted runner on the Pi,
+# because GitHub can't reach the Pi on the team network. Setup: README, "Deploy to the Pi".
+on:
+  workflow_run:
+    workflows: [Images]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Full commit SHA to deploy (rollback). Empty deploys the head of the selected branch.
+        required: false
+
+# Never cancel a running deploy halfway, queue the next one instead
+concurrency:
+  group: deploy-pi
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Only pushes to main, never pull requests
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: [self-hosted, pi]
+    timeout-minutes: 15
+    environment:
+      name: pi
+      url: ${{ vars.PI_URL }}
+    permissions:
+      contents: read
+      packages: read
+    env:
+      SHA: ${{ inputs.sha || github.event.workflow_run.head_sha || github.sha }}
+      ENV_FILE: ${{ vars.PI_ENV_FILE || '/opt/hackathon-fulda/.env.prod' }}
+    steps:
+      - name: Check inputs
+        run: |
+          if ! [[ "$SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::'$SHA' is not a full commit SHA (40 hex characters)"
+            exit 1
+          fi
+          if [ ! -f "$ENV_FILE" ]; then
+            echo "::error::$ENV_FILE is missing on the Pi. Copy .env.prod.example there and fill it in."
+            exit 1
+          fi
+      # The compose file of the deployed commit, so a rollback also rolls back the stack definition
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.SHA }}
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Pull and start
+        env:
+          IMAGE_PREFIX: ghcr.io/${{ github.repository }}
+          IMAGE_TAG: ${{ env.SHA }}
+        run: |
+          # GHCR names must be lowercase
+          export IMAGE_PREFIX="${IMAGE_PREFIX,,}"
+          compose() { docker compose -f compose.prod.yaml --env-file "$ENV_FILE" "$@"; }
+          compose pull --quiet
+          # --no-build: fail instead of building on the Pi if the images for this SHA are missing
+          compose up -d --wait --no-build --remove-orphans
+      - name: Smoke test
+        run: |
+          port="$(sed -n 's/^WEB_PORT=//p' "$ENV_FILE" | tail -n 1)"
+          body="$(curl -fsS --retry 10 --retry-delay 2 --retry-all-errors "http://localhost:${port:-80}/api/health")"
+          echo "$body"
+          if ! grep -q '"db":"ok"' <<< "$body"; then
+            echo "::error::/api/health does not report db: ok"
+            exit 1
+          fi
+      # Only our images that no container uses anymore. A rollback pulls them again.
+      - name: Remove old images
+        run: docker image prune -af --filter "label=org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}"

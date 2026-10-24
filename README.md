@@ -164,7 +164,7 @@ We use our own network from the start, not only when the venue Wi-Fi fails, so n
 
 - Use the IP, not a `.local` name: mDNS is unreliable on microcontrollers and some phones.
 - A laptop reaches the Pi by plugging into the switch with a cable, so the venue Wi-Fi keeps providing its internet. Joining the router's Wi-Fi works too, but then the laptop has no venue internet unless it has a second adapter.
-- The Pi runs the [production compose](#run-the-production-build). The API has no authentication yet, so anyone on the team network can call it.
+- The Pi runs the [production compose](#run-the-production-build), and every merge to `main` [deploys to it](#deploy-to-the-pi). The API has no authentication yet, so anyone on the team network can call it.
 
 ### During development (laptop as host)
 
@@ -238,11 +238,33 @@ docker compose -f compose.prod.yaml --env-file .env.prod up -d --wait
 `IMAGE_TAG` in `.env.prod` pins a commit SHA instead of `latest`. `IMAGE_PREFIX` points at another registry or fork.
 
 - The arm64 images need a **64-bit** Raspberry Pi OS (`uname -m` prints `aarch64`).
-- While the repo is private, so are the packages: run `docker login ghcr.io` once on the Pi and the Azure VM, with a GitHub token that only has `read:packages`. A public repo makes the packages public too (set their visibility in the package settings), and no login is needed.
+- While the repo is private, so are the packages: to pull by hand, run `docker login ghcr.io` once on the host with a GitHub token that only has `read:packages`. A public repo makes the packages public too (set their visibility in the package settings), and no login is needed. The [deploy workflow](#deploy-to-the-pi) logs in by itself.
 - Check the platforms: `docker buildx imagetools inspect ghcr.io/freunde-der-socken/hackathon-fulda-2026-api:latest`.
 - Pull requests that touch app sources, the lockfile or a Dockerfile build both images (without pushing), so a broken Dockerfile fails there.
 
 The API applies the SQL migrations in `apps/api/drizzle/` itself when it starts in production. Caddy keeps its certificates in the `caddy-data` volume. `docker compose -f compose.prod.yaml --env-file .env.prod down -v` deletes all data.
+
+### Deploy to the Pi
+
+[`deploy.yml`](.github/workflows/deploy.yml) deploys every push to `main` to the Raspberry Pi once the images are built. GitHub can't reach the Pi on the team network, so a self-hosted Actions runner on the Pi picks up the job (it only connects outbound). The job checks out the commit, pulls the images tagged with its SHA, runs `up -d --wait`, checks `/api/health` for `db: "ok"` and removes old images. Pull requests never run on the Pi.
+
+One-time setup on the Pi (64-bit Raspberry Pi OS, online through the 5G router):
+
+1. Install Docker and let your user run it: `curl -fsSL https://get.docker.com | sh`, then `sudo usermod -aG docker $USER` and log in again.
+2. Put the production env file in place (outside the runner's workspace, never in the repo):
+   ```sh
+   sudo mkdir -p /opt/hackathon-fulda && sudo chown $USER /opt/hackathon-fulda
+   # Copy .env.prod.example there as .env.prod and fill in POSTGRES_PASSWORD
+   chmod 600 /opt/hackathon-fulda/.env.prod
+   ```
+3. Register the runner: in GitHub, **Settings → Actions → Runners → New self-hosted runner**, choose Linux / ARM64 and run the download and `config.sh` commands shown there, adding `--labels pi`. Then install it as a service so it survives reboots: `sudo ./svc.sh install $USER && sudo ./svc.sh start`.
+4. Optional repository variables (**Settings → Secrets and variables → Actions → Variables**): `PI_URL` (e.g. `http://<Pi IP>`, shown on the deployment) and `PI_ENV_FILE` (if the env file is not at `/opt/hackathon-fulda/.env.prod`).
+
+The workflow logs in to GHCR with its own token, so the Pi needs no GitHub token. A stack that was started by hand on the Pi is taken over, the volumes (database, certificates) stay. The **pi** environment in the repo sidebar lists what is deployed.
+
+**Redeploy or roll back**: **Actions → Deploy → Run workflow**, optionally with the full SHA of an earlier `main` commit (its images must exist, i.e. its `Images` run succeeded). A rollback does not undo migrations: if the newer version changed the database schema, fix forward instead.
+
+If the repo becomes public, set **Settings → Actions → General → Fork pull request workflows** to require approval for all outside collaborators, so nobody can run code on the Pi from a fork.
 
 ## Working with AI
 
