@@ -1,4 +1,5 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
+import { sensorData } from './get_sensor_data';
 import { health } from './health';
 
 // One import and one `await app.register(...)` per line. Keep the imports and the registrations
@@ -8,4 +9,5 @@ import { health } from './health';
 // if (app.hasDecorator('db')) await app.register(todoRoutes);
 export const routes: FastifyPluginAsyncZod = async (app) => {
   await app.register(health);
+  await app.register(sensorData);
 };
