@@ -91,7 +91,7 @@ Copy an `.env.example` to `.env` (git-ignored) to override its defaults.
 | ----------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `.env.example`          | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_PORT` (Compose), `API_PORT` (API and web proxy) |
 | `apps/api/.env.example` | `NODE_ENV`, `HOST`, `LOG_LEVEL`, `CORS_ORIGIN` (comma-separated), `DATABASE_URL` (unset disables the database) |
-| `apps/web/.env.example` | `VITE_API_URL` (empty uses the `/api` proxy), `WEB_PORT`                                                       |
+| `apps/web/.env.example` | `VITE_API_URL` (empty uses the `/api` proxy), `WEB_PORT`, `API_TARGET` (proxy `/api` to e.g. the Pi)           |
 
 The API validates its variables at startup and exits with a readable list if one is invalid. `DATABASE_URL` must match the `POSTGRES_*` values in the root `.env`. Variables already set in the environment (for example by the devcontainer) win over `.env`.
 

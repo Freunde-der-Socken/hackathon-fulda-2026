@@ -2,6 +2,7 @@
 import { MenuIcon, PanelLeftCloseIcon, PanelLeftOpenIcon } from '@lucide/vue';
 import { useLocalStorage } from '@vueuse/core';
 import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Toaster } from '@/components/ui/sonner';
@@ -14,6 +15,8 @@ const primaryItems = computed(() => navItems.filter((item) => !item.secondary));
 const secondaryItems = computed(() => navItems.filter((item) => item.secondary));
 
 const collapsed = useLocalStorage('sidebar-collapsed', false);
+
+const route = useRoute();
 
 const linkClass =
   'flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground';
@@ -79,7 +82,8 @@ const activeClass = 'bg-accent text-accent-foreground';
     <main
       class="flex-1 px-4 py-6 pb-[calc(5rem+env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] md:px-8 md:pb-8"
     >
-      <div class="mx-auto w-full max-w-4xl">
+      <!-- Text pages stay readable at max-w-4xl; dashboards opt out with `meta: { fullWidth: true }` -->
+      <div :class="cn('mx-auto w-full', !route.meta.fullWidth && 'max-w-4xl')">
         <slot />
       </div>
     </main>
