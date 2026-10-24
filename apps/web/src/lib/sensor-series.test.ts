@@ -1,7 +1,18 @@
+import type { SensorReading } from '@repo/contracts';
 import { describe, expect, it } from 'vitest';
 import { groupReadings, markOutliers, niceTicks, splitAtGaps, valueDomain } from './sensor-series';
 
 const at = (s: number) => new Date(Date.UTC(2026, 0, 1, 0, 0, s)).toISOString();
+
+const reading = (sensorId: string, value: number, unit: string, s: number): SensorReading => ({
+  sensorId,
+  plantId: '6f1c0b6e-2a4d-4c43-9a8e-0d6a2f1b7c11',
+  classId: '3b8e5d2a-7c1f-4e9b-8a6d-5f2c1e0b9a44',
+  value,
+  unit,
+  recordedAt: at(s),
+  receivedAt: at(s),
+});
 
 describe('markOutliers', () => {
   it('flags an isolated failed read', () => {
@@ -22,10 +33,10 @@ describe('markOutliers', () => {
 describe('groupReadings', () => {
   it('groups by unit, then sensor, sorted by time', () => {
     const groups = groupReadings([
-      { sensorId: 't2', value: 21, unit: 'C', recordedAt: at(2), receivedAt: at(2) },
-      { sensorId: 't1', value: 20, unit: 'C', recordedAt: at(1), receivedAt: at(1) },
-      { sensorId: 'h1', value: 40, unit: '%', recordedAt: at(3), receivedAt: at(3) },
-      { sensorId: 't1', value: 19, unit: 'C', recordedAt: at(0), receivedAt: at(0) },
+      reading('t2', 21, 'C', 2),
+      reading('t1', 20, 'C', 1),
+      reading('h1', 40, '%', 3),
+      reading('t1', 19, 'C', 0),
     ]);
     expect(groups.map((g) => g.unit)).toEqual(['%', 'C']);
     expect(groups[1]!.series.map((s) => s.sensorId)).toEqual(['t1', 't2']);
