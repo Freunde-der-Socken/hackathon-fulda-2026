@@ -1,4 +1,4 @@
-import { HomeIcon, BookOpenIcon } from '@lucide/vue';
+import { HomeIcon, BookOpenIcon, MicIcon } from '@lucide/vue';
 import type { Component } from 'vue';
 
 export interface NavItem {
@@ -13,5 +13,6 @@ export interface NavItem {
 
 export const navItems: NavItem[] = [
   { label: 'Home', icon: HomeIcon, to: '/' },
+  { label: 'Noise', icon: MicIcon, to: '/noise' },
   { label: 'API docs', icon: BookOpenIcon, to: '/api/docs/', secondary: true, external: true },
 ];

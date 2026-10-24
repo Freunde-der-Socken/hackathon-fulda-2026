@@ -57,6 +57,7 @@ Run them from the repo root.
 | ----------------------------------------------- | ----------------------------------------------------------- |
 | `pnpm dev`                                      | Web and API in watch mode (through Turbo)                   |
 | `pnpm --filter @repo/web dev:host`              | Web dev server reachable from other devices on your network |
+| `pnpm --filter @repo/web dev:https`             | Same over HTTPS (self-signed), for microphone/camera access |
 | `pnpm build`                                    | Typecheck and build everything                              |
 | `pnpm lint` / `pnpm typecheck`                  | oxlint / `tsc` and `vue-tsc` in every package               |
 | `pnpm test`                                     | Run the Vitest tests of every package once (not part of CI) |
@@ -145,7 +146,8 @@ Details in [`apps/api/README.md`](apps/api/README.md).
 1. Put the phone and the computer on the same Wi-Fi.
 2. `pnpm --filter @repo/web dev:host`, and note the `Network:` address that Vite prints (the LAN IP of your computer).
 3. Open `http://<that IP>:5173` on the phone. The `/api` proxy works the same way, so the API needs no change.
-4. On WSL the address Vite prints is the WSL one. Forward the port from Windows (`netsh interface portproxy add v4tov4 listenport=5173 connectaddress=<WSL IP> connectport=5173`, as admin) and allow it in the Windows firewall.
+4. Microphone, camera and motion sensors only work on secure origins, which a LAN IP over http is not. For those, run `pnpm --filter @repo/web dev:https` instead and open `https://<that IP>:5173`. The certificate is self-signed, so accept the browser warning once (Advanced → Proceed).
+5. On WSL the address Vite prints is the WSL one. Forward the port from Windows (`netsh interface portproxy add v4tov4 listenport=5173 connectaddress=<WSL IP> connectport=5173`, as admin) and allow it in the Windows firewall.
 
 ## Connect a device
 
