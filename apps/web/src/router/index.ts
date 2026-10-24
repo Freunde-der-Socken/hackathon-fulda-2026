@@ -6,9 +6,22 @@ export const router = createRouter({
   routes: [
     { path: '/', name: 'home', component: HomeView },
     {
+      path: '/sensors',
+      name: 'sensors',
+      component: () => import('@/views/SensorsView.vue'),
+      meta: { fullWidth: true },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),
     },
   ],
 });
+
+declare module 'vue-router' {
+  interface RouteMeta {
+    /** Use the whole width next to the sidebar instead of the readable max-w-4xl column. */
+    fullWidth?: boolean;
+  }
+}

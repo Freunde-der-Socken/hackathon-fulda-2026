@@ -16,7 +16,11 @@ export default defineConfig(({ mode }) => {
     server: {
       port: Number(env.WEB_PORT) || 5173,
       proxy: {
-        '/api': { target: `http://localhost:${env.API_PORT || 3000}`, changeOrigin: true },
+        '/api': {
+          // API_TARGET points the proxy at another API, e.g. the Pi's, to see its data
+          target: env.API_TARGET || `http://localhost:${env.API_PORT || 3000}`,
+          changeOrigin: true,
+        },
       },
     },
   };
