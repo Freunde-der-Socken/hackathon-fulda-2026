@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
-import { toDb } from '@/composables/useMicLevel';
+import { SPL_OFFSET, toDb, toSpl } from '@/composables/useMicLevel';
 import NoiseView from './NoiseView.vue';
 
 describe('NoiseView', () => {
@@ -18,5 +18,12 @@ describe('toDb', () => {
     expect(toDb(0.1)).toBeCloseTo(-20);
     expect(toDb(0)).toBe(-96);
     expect(toDb(2)).toBe(0);
+  });
+});
+
+describe('toSpl', () => {
+  it('shifts dBFS by the estimated offset', () => {
+    expect(toSpl(0)).toBe(SPL_OFFSET);
+    expect(toSpl(-22.4)).toBeCloseTo(89.6);
   });
 });

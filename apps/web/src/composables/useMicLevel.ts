@@ -9,6 +9,15 @@ const BLOCK_MS = 100;
 export const toDb = (amplitude: number) =>
   amplitude > 0 ? Math.min(0, Math.max(MIN_DB, 20 * Math.log10(amplitude))) : MIN_DB;
 
+/**
+ * Estimated dBFS to dB SPL offset. Android's CDD recommends that 90 dB SPL at 1 kHz reads as
+ * RMS 2500 of 32768 (about -22.4 dBFS). Real phones deviate by up to ~10 dB, iPhones are unknown.
+ */
+export const SPL_OFFSET = 112;
+
+/** dBFS to estimated dB SPL. Uncalibrated, so only roughly comparable between phones. */
+export const toSpl = (dbfs: number) => dbfs + SPL_OFFSET;
+
 // Sums every sample of a block, so no audio between two readings is skipped
 const workletSource = `
 class LevelProcessor extends AudioWorkletProcessor {

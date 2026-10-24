@@ -6,7 +6,7 @@ import { toast } from 'vue-sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { apiPost } from '@/lib/api';
-import { MIN_DB, useMicLevel } from '@/composables/useMicLevel';
+import { MIN_DB, SPL_OFFSET, toSpl, useMicLevel } from '@/composables/useMicLevel';
 
 const SEND_INTERVAL_MS = 1000;
 
@@ -24,7 +24,7 @@ const sendFailed = ref(false);
 const secure = window.isSecureContext;
 
 const percent = (db: number) => `${((db - MIN_DB) / -MIN_DB) * 100}%`;
-const format = (db: number) => (running.value ? db.toFixed(1) : '–');
+const format = (db: number) => (running.value ? toSpl(db).toFixed(1) : '–');
 const levelWidth = computed(() => percent(level.value));
 const peakLeft = computed(() => percent(peak.value));
 
@@ -54,8 +54,8 @@ useIntervalFn(async () => {
       SensorReadingInput,
       {
         sensorId: sensorId.value,
-        value: Math.round(average.level * 10) / 10,
-        unit: 'dBFS',
+        value: Math.round(toSpl(average.level) * 10) / 10,
+        unit: 'dB',
         recordedAt: new Date().toISOString(),
       },
       SensorReading,
@@ -90,17 +90,18 @@ useIntervalFn(async () => {
       <CardHeader>
         <CardTitle>Ambient sound</CardTitle>
         <CardDescription>
-          Measured with this phone's microphone, in dBFS (0 = loudest the microphone can record).
+          Estimated sound pressure in dB, measured with this phone's microphone. Not calibrated:
+          phones can be off by up to ~10 dB, so compare trends rather than exact values.
         </CardDescription>
       </CardHeader>
       <CardContent class="flex flex-col gap-4">
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <div class="text-sm text-muted-foreground">Level</div>
+            <div class="text-sm text-muted-foreground">Level (dB)</div>
             <div class="text-4xl font-bold tabular-nums">{{ format(level) }}</div>
           </div>
           <div>
-            <div class="text-sm text-muted-foreground">Peak</div>
+            <div class="text-sm text-muted-foreground">Peak (dB)</div>
             <div class="text-4xl font-bold tabular-nums">{{ format(peak) }}</div>
           </div>
         </div>
@@ -108,9 +109,9 @@ useIntervalFn(async () => {
         <div
           class="relative h-4 overflow-hidden rounded-full bg-muted"
           role="meter"
-          :aria-valuemin="MIN_DB"
-          aria-valuemax="0"
-          :aria-valuenow="level"
+          :aria-valuemin="toSpl(MIN_DB)"
+          :aria-valuemax="SPL_OFFSET"
+          :aria-valuenow="toSpl(level)"
           aria-label="Sound level"
         >
           <div
