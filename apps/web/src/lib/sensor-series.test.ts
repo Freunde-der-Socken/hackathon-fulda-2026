@@ -1,6 +1,14 @@
 import type { SensorReading } from '@repo/contracts';
 import { describe, expect, it } from 'vitest';
-import { groupReadings, markOutliers, niceTicks, splitAtGaps, valueDomain } from './sensor-series';
+import {
+  adcToLux,
+  adcToVolts,
+  groupReadings,
+  markOutliers,
+  niceTicks,
+  splitAtGaps,
+  valueDomain,
+} from './sensor-series';
 
 const at = (s: number) => new Date(Date.UTC(2026, 0, 1, 0, 0, s)).toISOString();
 
@@ -30,7 +38,28 @@ describe('markOutliers', () => {
   });
 });
 
+describe('adcToLux', () => {
+  it('converts the ADC value to volts', () => {
+    expect(adcToVolts(4095)).toBeCloseTo(3.3);
+    expect(adcToVolts(2048)).toBeCloseTo(1.65, 3);
+  });
+
+  it('rises with the voltage and stays finite', () => {
+    expect(adcToLux(0)).toBe(0);
+    // 1.65 V: LDR equals the 10 kΩ resistor, (15 / 10)^(1 / 0.7) × 10 lx
+    expect(adcToLux(2047.5)).toBeCloseTo(17.84, 1);
+    expect(adcToLux(3000)).toBeGreaterThan(adcToLux(2000));
+    expect(Number.isFinite(adcToLux(4095))).toBe(true);
+  });
+});
+
 describe('groupReadings', () => {
+  it('shows raw LDR readings as lux', () => {
+    const [group] = groupReadings([reading('l1', 2047.5, 'adc', 0)]);
+    expect(group!.unit).toBe('lx');
+    expect(group!.series[0]!.points[0]!.value).toBeCloseTo(17.84, 1);
+  });
+
   it('groups by unit, then sensor, sorted by time', () => {
     const groups = groupReadings([
       reading('t2', 21, 'C', 2),
