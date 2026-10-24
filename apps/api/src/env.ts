@@ -7,7 +7,6 @@ const Env = z.object({
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   DATABASE_URL: z.url().optional(),
-  MQTT_URL: z.url().optional(),
 });
 export type Env = z.infer<typeof Env>;
 

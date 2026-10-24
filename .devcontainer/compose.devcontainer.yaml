@@ -9,10 +9,8 @@ services:
     environment:
       # Inside the compose network the services are reached by name, not localhost
       DATABASE_URL: postgres://app:app@postgres:5432/app
-      MQTT_URL: mqtt://mosquitto:1883
     depends_on:
       postgres: { condition: service_healthy }
-      mosquitto: { condition: service_healthy }
 
 volumes:
   pnpm-store:

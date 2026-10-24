@@ -23,34 +23,3 @@ pnpm dev
 4. Write the Zod schemas for the route in `@repo/contracts`. They are hand-written on purpose, so the API shape isn't tied to the table layout.
 
 For quick experiments `pnpm --filter @repo/api db:push` syncs the schema without a migration file. Don't use it for anything you want to keep, and run `db:generate` before you commit. `db:studio` opens Drizzle Studio.
-
-## MQTT (optional)
-
-Without `MQTT_URL` the API starts, logs a warning and reports `mqtt: "disabled"` on `GET /api/health`. Otherwise `app.mqtt` gives typed, validated access to the broker (Mosquitto from `compose.yaml`, start it with `pnpm mqtt:up`).
-
-Topics and payloads are defined only in `packages/contracts/src/mqtt/index.ts`:
-
-```ts
-export const topics = {
-  reading: { pattern: 'sensors/+/reading', schema: Reading },
-} as const;
-```
-
-Convention: `<domain>/<id>/<event>`, lowercase, no leading slash. `+` is the only wildcard, and its values are the `params`. `reading` and `Reading` here are placeholders for your own topics.
-
-```ts
-// Throws (ZodError) before anything reaches the broker if the payload is invalid
-await app.mqtt.publish('reading', ['sensor-1'], {
-  deviceId: 'sensor-1',
-  value: 21.5,
-  unit: '°C',
-  ts,
-});
-
-// Invalid incoming payloads are logged and dropped, so the handler only sees valid ones
-const unsubscribe = await app.mqtt.subscribe('reading', ({ payload, params }) => {
-  app.log.info({ payload, params }, 'reading');
-});
-```
-
-Messages reach the browser through `GET /api/events` ([`routes/events.ts`](src/routes/events.ts)), a Server-Sent Events stream that is only registered when `MQTT_URL` is set. It subscribes to every key in `topics` and sends each valid message as `event: <topicKey>` with `data: { topic, params, payload }`, plus a heartbeat comment every 15 s. The broker stays private. Open streams are ended in a `preClose` hook, otherwise `app.close()` would wait for them forever, and the CORS headers are copied into `writeHead` by hand because a hijacked reply skips Fastify's header handling. On the web side use `useLiveTopic(topicKey)`.
