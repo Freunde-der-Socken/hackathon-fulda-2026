@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { MenuIcon, PanelLeftCloseIcon, PanelLeftOpenIcon } from '@lucide/vue';
-import { useLocalStorage } from '@vueuse/core';
+import { MenuIcon, MoonIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, SunIcon } from '@lucide/vue';
+import { useDark, useLocalStorage, useToggle } from '@vueuse/core';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,10 @@ const primaryItems = computed(() => navItems.filter((item) => !item.secondary));
 const secondaryItems = computed(() => navItems.filter((item) => item.secondary));
 
 const collapsed = useLocalStorage('sidebar-collapsed', false);
+
+// Follows the system setting until someone toggles it, then remembers the choice
+const isDark = useDark();
+const toggleDark = useToggle(isDark);
 
 const route = useRoute();
 
@@ -70,6 +74,18 @@ const activeClass = 'bg-accent text-accent-foreground';
           </RouterLink>
         </template>
       </nav>
+      <div class="mt-auto p-2">
+        <button
+          type="button"
+          :class="cn(linkClass, 'w-full', collapsed && 'justify-center px-0')"
+          :title="isDark ? 'Light mode' : 'Dark mode'"
+          @click="toggleDark()"
+        >
+          <SunIcon v-if="isDark" class="size-5 shrink-0" />
+          <MoonIcon v-else class="size-5 shrink-0" />
+          <span v-if="!collapsed">{{ isDark ? 'Light mode' : 'Dark mode' }}</span>
+        </button>
+      </div>
     </aside>
 
     <!-- Phone: top bar -->
@@ -77,6 +93,16 @@ const activeClass = 'bg-accent text-accent-foreground';
       class="sticky top-0 z-10 flex h-14 shrink-0 items-center border-b bg-card px-4 pt-[env(safe-area-inset-top)] box-content md:hidden"
     >
       <span class="font-semibold">{{ APP_NAME }}</span>
+      <Button
+        variant="ghost"
+        size="icon"
+        class="-mr-2 ml-auto size-11"
+        :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+        @click="toggleDark()"
+      >
+        <SunIcon v-if="isDark" />
+        <MoonIcon v-else />
+      </Button>
     </header>
 
     <main
@@ -98,7 +124,7 @@ const activeClass = 'bg-accent text-accent-foreground';
         :key="item.to"
         :to="item.to"
         class="flex min-h-14 min-w-11 flex-1 flex-col items-center justify-center gap-0.5 text-xs font-medium text-muted-foreground"
-        active-class="text-foreground"
+        active-class="text-primary"
       >
         <component :is="item.icon" class="size-5" />
         {{ item.label }}
