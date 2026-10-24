@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/Holytrashbag/hackathon-fulda-2026/actions/workflows/ci.yml/badge.svg)](https://github.com/Holytrashbag/hackathon-fulda-2026/actions/workflows/ci.yml)
 
+Prototype of a classroom mascot: a physical plant that reacts live to CO2 and noise in the classroom and grows with the points the class earns, with a web app for the teacher. What we're building and what's still open is in [`docs/concept.md`](docs/concept.md).
+
 A TypeScript monorepo (pnpm workspaces + Turborepo) for a Vue 3 web app and a Fastify API that share Zod schemas. The web app uses Vite, Vue Router, Pinia, Tailwind v4 and shadcn-vue. The API uses Fastify 5 with optional Postgres (Drizzle). Browser and hardware both talk to it over REST. Lint and format run with oxlint and oxfmt.
 
 ## What's in here
@@ -16,6 +18,7 @@ packages/
   ml/                     Model save/load helpers (TensorFlow.js)   README: packages/ml/README.md
   oxc-config/             oxlint presets and the oxfmt config        README: packages/oxc-config/README.md
   typescript-config/      tsconfig presets (base, node, vue)         README: packages/typescript-config/README.md
+docs/concept.md           The project: hardware, plant modes, points, pages, open decisions
 compose.yaml              Postgres for local development
 .devcontainer/            VS Code devcontainer (Node, pnpm, Docker CLI, extensions)
 ```
