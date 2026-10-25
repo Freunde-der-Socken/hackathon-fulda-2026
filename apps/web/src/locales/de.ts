@@ -137,6 +137,7 @@ export default {
       lightRaw: 'Licht (LDR)',
       light: 'Licht',
       noise: 'Lautstärke',
+      co2: 'CO₂',
     },
     noUnit: 'ohne Einheit',
     readings: '{count} Messwert | {count} Messwerte',

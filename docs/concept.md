@@ -16,7 +16,7 @@ We're building a prototype of a classroom mascot in the form of a physical plant
 We have neither a microphone nor a CO2 sensor for the plant, so the prototype uses stand-ins:
 
 - **Noise** comes from the phone page. It replaced the earlier plan of Bluetooth headphones on a second ESP32.
-- **CO2** is not measured. The API calculates it from the room volume and the number of people in the room, both fixed demo values.
+- **CO2** is not measured. The API calculates it from the room volume and the number of people in the room, both fixed demo values (see [CO2 estimate](#co2-estimate)).
 
 Treat both as data sources that real sensors can replace later.
 
@@ -41,6 +41,30 @@ The plant **pulls** from the API. The first plan was the other way round, with t
 flowchart LR
   api["API on the Pi"] -- "HTTP to the ESP32's own server<br/>(mode, LED ring, stalk)" --> plant["Plant ESP32"]
 ```
+
+## CO2 estimate
+
+The API stores a calculated CO2 value for every class with a plant once a minute, as an ordinary sensor reading (`sensorId` `co2-estimate`, unit `ppm`). It shows up in `GET /api/sensor-data` and the charts like the plant's own sensors. When a real CO2 sensor arrives, it POSTs to `/api/sensor-data` with the unit `ppm` and `CO2_SOURCE=off` stops the estimate.
+
+The room is one well-mixed volume (single-zone mass balance):
+
+$$\frac{dC}{dt} = \frac{N \cdot G \cdot 10^6}{V} - \lambda \cdot (C - C_\text{out})$$
+
+With a constant headcount $N$ and air change rate $\lambda$, the concentration approaches $C_\text{out} + \frac{N G 10^6}{V \lambda}$ exponentially. Every hour repeats the same school rhythm: a 45 minute lesson with closed windows, then a 15 minute break with the room empty and the windows wide open. Each lesson starts where the last break ended, so the curve is a smooth sawtooth that rises during the lesson and falls in the break.
+
+| Demo value                 | Value       | Why                                 |
+| -------------------------- | ----------- | ----------------------------------- |
+| Room volume $V$            | 180 m³      | 60 m² classroom, 3 m ceiling        |
+| Headcount $N$              | 25          | 24 students and a teacher           |
+| CO2 per person $G$         | 18 L/h      | Sitting quietly                     |
+| Outdoor air $C_\text{out}$ | 420 ppm     | Current outdoor level               |
+| Air changes, lesson        | 0.5 per h   | Windows closed, door and leaks only |
+| Air changes, break         | 6 per h     | Windows wide open (Stoßlüften)      |
+| Lesson / break             | 45 / 15 min | Starts at every full hour           |
+
+That gives about 830 ppm at the start of a lesson, 1000 ppm after 5 minutes, 2000 ppm after 35 minutes and 2270 ppm at the end, a realistic range for a classroom with closed windows. The formula and the values live in `apps/api/src/co2.ts`.
+
+The LED ring maps the value to a color with the Umweltbundesamt limits: green up to 1000 ppm (harmless), then the hue slowly shifts over yellow (1500 ppm) to red at 2000 ppm (unacceptable) and above. The mapping is `co2Color` in the same file; when the API sends it to the plant is still [open](#open-decisions).
 
 ## Two modes
 
@@ -94,7 +118,6 @@ The web app is the teacher's companion. Planned pages:
 - ~~When and how often the API sends to the plant ESP32, and what the payload contains.~~ Decided: the plant polls the noise score every second, see [decision 1](#1-the-plant-pulls-instead-of-the-api-pushing). Still open: how the LED ring gets the CO2 level and the growth.
 - The water amounts: the maximum for a silent phase, "kleine Menge", "große Menge", and how much water a full bloom takes.
 - The dB level that counts as quiet.
-- The CO2 formula and the demo values for room volume and headcount.
 - Whether the physical watering can gets built.
 
 ## Decisions

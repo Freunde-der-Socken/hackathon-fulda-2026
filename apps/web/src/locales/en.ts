@@ -135,6 +135,7 @@ export default {
       lightRaw: 'Light (LDR)',
       light: 'Light',
       noise: 'Noise',
+      co2: 'CO₂',
     },
     noUnit: 'no unit',
     readings: '{count} reading | {count} readings',

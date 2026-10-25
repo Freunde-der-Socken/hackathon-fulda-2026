@@ -6,6 +6,7 @@ import {
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod';
 import { env } from './env';
+import { co2EstimatePlugin } from './plugins/co2-estimate';
 import { corsPlugin } from './plugins/cors';
 import { dbPlugin } from './plugins/db';
 import { errorHandlerPlugin } from './plugins/error-handler';
@@ -29,6 +30,7 @@ export async function buildApp() {
   await app.register(errorHandlerPlugin);
   await app.register(dbPlugin);
   await app.register(wateringCanPlugin);
+  await app.register(co2EstimatePlugin);
   // Registered before the routes so it sees them all
   await app.register(swaggerPlugin);
   await app.register(routes, { prefix: '/api' });

@@ -19,7 +19,7 @@ export interface SensorGroup {
 }
 
 /** What a unit measures. The title is `sensors.kinds.<kind>` in the locale messages. */
-export type SensorKind = 'temperature' | 'humidity' | 'lightRaw' | 'light' | 'noise';
+export type SensorKind = 'temperature' | 'humidity' | 'lightRaw' | 'light' | 'noise' | 'co2';
 
 const KINDS: Record<string, SensorKind> = {
   C: 'temperature',
@@ -29,6 +29,7 @@ const KINDS: Record<string, SensorKind> = {
   lx: 'light',
   dB: 'noise',
   dBFS: 'noise',
+  ppm: 'co2',
 };
 
 /** Undefined for units we don't know, which are shown by their unit instead. */
