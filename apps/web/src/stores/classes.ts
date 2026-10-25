@@ -64,9 +64,21 @@ export const useClassesStore = defineStore('classes', () => {
     return created;
   }
 
+  /**
+   * Connects a plant to a class, moving it away from its old class and freeing the class's old plant
+   * first, since the API only connects free pairs. Not atomic: if a step fails, both may end up free.
+   */
   async function assign(plantId: string, classId: string) {
-    await apiPut(`/plants/${plantId}/class`, AssignPlantBody, { classId }, Plant);
-    await load();
+    const oldClass = plants.value?.find((p) => p.id === plantId)?.classId;
+    const oldPlant = classes.value?.find((c) => c.id === classId)?.plantId;
+    if (oldClass === classId) return;
+    try {
+      if (oldClass) await apiDelete(`/plants/${plantId}/class`, Plant);
+      if (oldPlant) await apiDelete(`/plants/${oldPlant}/class`, Plant);
+      await apiPut(`/plants/${plantId}/class`, AssignPlantBody, { classId }, Plant);
+    } finally {
+      await load();
+    }
   }
 
   async function disconnect(plantId: string) {
