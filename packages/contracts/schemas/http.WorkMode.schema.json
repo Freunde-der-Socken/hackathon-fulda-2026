@@ -4,7 +4,8 @@
   "enum": [
     "silent",
     "discussion",
-    "group"
+    "group",
+    "test"
   ],
   "title": "WorkMode"
 }

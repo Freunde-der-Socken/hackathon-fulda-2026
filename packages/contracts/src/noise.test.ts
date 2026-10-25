@@ -16,5 +16,6 @@ describe('noiseScore', () => {
     expect(noiseScore(55, 'discussion')).toBe(51);
     expect(noiseScore(55, 'group')).toBe(1);
     expect(noiseScore(80, 'group')).toBe(100);
+    expect(noiseScore(60, 'test')).toBe(51);
   });
 });

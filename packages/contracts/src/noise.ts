@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { Id } from './common';
 
 /** How loud a class may be right now. The teacher sets it per class. */
-export const WorkMode = z.enum(['silent', 'discussion', 'group']);
+export const WorkMode = z.enum(['silent', 'discussion', 'group', 'test']);
 export type WorkMode = z.infer<typeof WorkMode>;
 
 /**
@@ -18,6 +18,8 @@ export const NOISE_RULES = {
     discussion: { minDb: 50, maxDb: 60 },
     /** Gruppenarbeit */
     group: { minDb: 60, maxDb: 80 },
+    /** For trying out the plant: a quiet room is low, clapping or shouting reaches the top */
+    test: { minDb: 30, maxDb: 90 },
   },
   /** The target score comes from the median of the class's noise readings in this window. */
   windowSeconds: 10,
