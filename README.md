@@ -6,6 +6,26 @@ Prototype of a classroom mascot: a physical plant that reacts live to CO2 and no
 
 A TypeScript monorepo (pnpm workspaces + Turborepo) for a Vue 3 web app and a Fastify API that share Zod schemas. The web app uses Vite, Vue Router, Pinia, Tailwind v4 and shadcn-vue. The API uses Fastify 5 with optional Postgres (Drizzle). Browser and hardware both talk to it over REST. Lint and format run with oxlint and oxfmt.
 
+## Vor dem Hackathon
+
+Wir möchten offenlegen, was dieses Repo schon vor dem Event enthielt.
+
+In der Woche vor dem Hackathon (18. bis 23. Oktober 2026) haben wir eine gemeinsame Arbeitsgrundlage eingerichtet. Dabei ging es uns nicht um einen Vorsprung für das Produkt. Aus unserer Erfahrung der letzten Jahre wollten wir das Onboarding so einfach wie möglich machen: Alle im Team sollten ab der ersten Minute mitarbeiten können, statt die ersten Stunden mit dem Einrichten von Werkzeugen zu verbringen. Die Grundlage diente nur der Zusammenarbeit und enthielt keinen Code für unsere Idee:
+
+- Monorepo-Werkzeuge: pnpm-Workspaces, Turborepo, TypeScript-Presets, oxlint und oxfmt sowie CI (Formatierung, Lint, Typecheck, Build)
+- Eine leere API (Fastify, nur ein Health-Check) und eine leere Web-App (Vue, eine Platzhalter-Startseite und eine 404-Seite)
+- Eine Postgres-Anbindung ohne Tabellen, Docker-Images, ein Devcontainer, Vorlagen für PRs und Issues sowie Anweisungen für KI-Assistenten
+
+Alles, was die Pflanze ausmacht, ist während des Hackathons entstanden: die Datenbanktabellen, die API-Endpunkte, die Seiten für Lehrkräfte (Klassen, Unterricht, Rückblick), die Sensor-Diagramme, die Lärm-Seite fürs Handy, die Wasserpunkte, die Firmware für Pflanze und Gießkanne und das Deployment auf den Raspberry Pi.
+
+Ein Teil der Vorbereitung hat sich als unnötig herausgestellt:
+
+- Wir hatten MQTT vorbereitet: einen Mosquitto-Broker, ein API-Plugin und einen darauf aufbauenden Live-Kanal zur Web-App. Am ersten Hackathon-Tag haben wir entschieden, alles über REST zu schicken, und das komplett wieder entfernt ([#56](https://github.com/Freunde-der-Socken/hackathon-fulda-2026/pull/56)).
+- Der TensorFlow.js-Workspace (`apps/rnd`, `packages/ml`) ist nie über einen Smoke-Test hinausgekommen, und die App nutzt ihn nicht.
+- Den JSON-Schema-Export für Firmware (`packages/contracts/schemas/`) nutzt unsere Firmware nicht.
+
+Dass vor dem Event außer Init-Commits keine Commits erlaubt sind, haben wir erst kurz vor der Demo erfahren. Wir schreiben das hier offen auf, damit die Jury selbst beurteilen kann, was während des Hackathons entstanden ist.
+
 ## What's in here
 
 ```
