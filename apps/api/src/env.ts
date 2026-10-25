@@ -9,6 +9,8 @@ const Env = z.object({
   DATABASE_URL: z.url().optional(),
   // Base URL of the watering can's HTTP server, e.g. http://192.168.1.50. Unset sends nothing.
   WATERING_CAN_URL: z.url().optional(),
+  // 'off' once a real CO2 sensor POSTs its own readings
+  CO2_SOURCE: z.enum(['estimate', 'off']).default('estimate'),
 });
 export type Env = z.infer<typeof Env>;
 

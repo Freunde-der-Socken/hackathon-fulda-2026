@@ -6,6 +6,7 @@ import {
   groupReadings,
   markOutliers,
   niceTicks,
+  sensorKind,
   splitAtGaps,
   valueDomain,
 } from './sensor-series';
@@ -20,6 +21,12 @@ const reading = (sensorId: string, value: number, unit: string, s: number): Sens
   unit,
   recordedAt: at(s),
   receivedAt: at(s),
+});
+
+describe('sensorKind', () => {
+  it('knows the CO2 estimate the API stores in ppm', () => {
+    expect(sensorKind('ppm')).toBe('co2');
+  });
 });
 
 describe('markOutliers', () => {
