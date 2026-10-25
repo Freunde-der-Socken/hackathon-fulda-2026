@@ -69,6 +69,18 @@ export default {
       'Keine Lautstärke-Messwerte während der Phase, daher kein Wasser. Läuft die Lautstärke-Seite?',
     phaseResult: '{percent} % der Zeit leise: +{water} Wasser',
     awarded: '+{amount} Wasser',
+    workMode: 'Arbeitsphase',
+    workModeHint:
+      'Legt fest, wie laut die Klasse sein darf. Je lauter es wird, desto mehr zieht sich die Pflanze ein.',
+    workModeMax: 'Bei {db} dB ist die Pflanze ganz eingezogen.',
+    workModeSaved: 'Arbeitsphase: {mode}',
+    dbRange: '{minDb}–{maxDb} dB',
+    modes: {
+      // Soft hyphens, so the words break below the slider on phones
+      silent: 'Still\u00ADarbeit',
+      discussion: 'Unterrichts\u00ADgespräch',
+      group: 'Gruppen\u00ADarbeit',
+    },
   },
   review: {
     title: 'Rückblick',
