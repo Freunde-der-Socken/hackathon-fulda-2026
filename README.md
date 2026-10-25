@@ -228,6 +228,7 @@ On the Pi, use `http://<Pi IP>/api/...` instead. `docker compose -f compose.prod
 | ---------------------------- | ------------------------------------------------------------------------------------- |
 | `POSTGRES_PASSWORD`          | Required. Password of the database user (`POSTGRES_USER`, `POSTGRES_DB` are optional) |
 | `SITE_ADDRESS`               | `:80` (default) is plain HTTP. A domain name makes Caddy fetch an HTTPS certificate   |
+| `TLS_DEFAULT_SNI`            | The single IP when `SITE_ADDRESS` contains an IP, so the TLS handshake works          |
 | `CORS_ORIGIN`                | Only needed if the browser loads the app from another origin than the web container   |
 | `WEB_PORT`, `WEB_HTTPS_PORT` | Published ports (80, 443)                                                             |
 
