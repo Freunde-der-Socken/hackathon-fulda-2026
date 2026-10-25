@@ -13,6 +13,8 @@ apps/
   web/                    Vue 3 + Vite + Tailwind + shadcn-vue       README: apps/web/README.md
   api/                    Fastify API, Drizzle (Postgres)            README: apps/api/README.md
   rnd/                    TensorFlow.js R&D workspace (smoke test)   README: apps/rnd/README.md
+  plant/                  ESP32 firmware of the plant (PlatformIO, not in the pnpm workspace)
+  wateringcan/            ESP32 firmware of the watering can (PlatformIO, not in the pnpm workspace)
 packages/
   contracts/              Zod schemas shared by web and API          README: packages/contracts/README.md
   ml/                     Model save/load helpers (TensorFlow.js)   README: packages/ml/README.md

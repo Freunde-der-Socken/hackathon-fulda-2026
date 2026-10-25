@@ -1,6 +1,6 @@
 # Repository guide
 
-pnpm + Turborepo monorepo: `apps/web` (Vue 3, Vite, Tailwind v4, shadcn-vue), `apps/api` (Fastify 5, Zod type provider, optional Drizzle/Postgres), `apps/rnd` (TensorFlow.js R&D workspace), `packages/contracts` (Zod schemas shared by both), `packages/ml` (model save/load helpers), `packages/oxc-config`, `packages/typescript-config`. The README has the commands, ports, env vars and recipes. App details are in `apps/*/README.md` and `packages/contracts/README.md`.
+pnpm + Turborepo monorepo: `apps/web` (Vue 3, Vite, Tailwind v4, shadcn-vue), `apps/api` (Fastify 5, Zod type provider, optional Drizzle/Postgres), `apps/rnd` (TensorFlow.js R&D workspace), `apps/plant` and `apps/wateringcan` (PlatformIO firmware for the ESP32s, excluded from the pnpm workspace, oxfmt and the Docker images), `packages/contracts` (Zod schemas shared by both), `packages/ml` (model save/load helpers), `packages/oxc-config`, `packages/typescript-config`. The README has the commands, ports, env vars and recipes. App details are in `apps/*/README.md` and `packages/contracts/README.md`.
 
 ## Project
 
