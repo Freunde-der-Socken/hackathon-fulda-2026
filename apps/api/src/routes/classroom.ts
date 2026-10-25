@@ -8,6 +8,7 @@ import {
   PlantList,
   SchoolClass,
   SchoolClassList,
+  SetWorkModeBody,
 } from '@repo/contracts';
 import { asc, eq } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
@@ -20,6 +21,7 @@ const toClass = (row: ClassRow): SchoolClass => ({
   id: row.id,
   name: row.name,
   plantId: row.plantId,
+  workMode: row.workMode as SchoolClass['workMode'],
   createdAt: row.createdAt.toISOString(),
 });
 
@@ -53,6 +55,7 @@ export const classroom: FastifyPluginAsyncZod = async (app) => {
       .select({
         id: classes.id,
         name: classes.name,
+        workMode: classes.workMode,
         createdAt: classes.createdAt,
         plantId: plantClasses.plantId,
       })
@@ -69,6 +72,34 @@ export const classroom: FastifyPluginAsyncZod = async (app) => {
       const [row] = await app.db.insert(classes).values(request.body).returning();
       if (!row) throw new Error('Insert into classes returned no row');
       return reply.code(201).send(toClass({ ...row, plantId: null }));
+    },
+  );
+
+  // The noise score follows the new range right away, but moves there slowly (routes/noise.ts)
+  app.put(
+    '/classes/:id/work-mode',
+    {
+      schema: {
+        params: IdParams,
+        body: SetWorkModeBody,
+        response: { 200: SchoolClass, 404: ErrorResponse },
+      },
+    },
+    async (request) => {
+      const { id } = request.params;
+      const { workMode } = request.body;
+      const [row] = await app.db
+        .update(classes)
+        .set({ workMode })
+        .where(eq(classes.id, id))
+        .returning();
+      if (!row) throw app.httpErrors.notFound(`Unknown class ${id}`);
+      const [mapping] = await app.db
+        .select({ plantId: plantClasses.plantId })
+        .from(plantClasses)
+        .where(eq(plantClasses.classId, id));
+      request.log.info({ classId: id, workMode }, 'Work mode changed');
+      return toClass({ ...row, plantId: mapping?.plantId ?? null });
     },
   );
 

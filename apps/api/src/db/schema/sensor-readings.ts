@@ -14,5 +14,10 @@ export const sensorReadings = pgTable(
     recordedAt: timestamp({ withTimezone: true }).notNull(),
     receivedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index().on(t.sensorId, t.recordedAt), index().on(t.classId, t.recordedAt)],
+  // classId + receivedAt for the noise score window (routes/noise.ts)
+  (t) => [
+    index().on(t.sensorId, t.recordedAt),
+    index().on(t.classId, t.recordedAt),
+    index().on(t.classId, t.receivedAt),
+  ],
 );

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Id, Timestamp } from './common';
+import { WorkMode } from './noise';
 
 const Name = z.string().trim().min(1).max(80);
 
@@ -8,6 +9,7 @@ export const SchoolClass = z.object({
   id: Id,
   name: z.string(),
   plantId: Id.nullable(),
+  workMode: WorkMode,
   createdAt: Timestamp,
 });
 export type SchoolClass = z.infer<typeof SchoolClass>;
