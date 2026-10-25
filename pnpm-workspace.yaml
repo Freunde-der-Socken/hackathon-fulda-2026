@@ -1,6 +1,9 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+  # PlatformIO firmware for the ESP32s, not Node packages
+  - '!apps/plant'
+  - '!apps/wateringcan'
 
 # Fail `pnpm install` on a Node version outside `engines` instead of only warning
 engineStrict: true

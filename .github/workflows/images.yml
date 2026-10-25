@@ -6,6 +6,8 @@ on:
   pull_request:
     paths:
       - 'apps/**'
+      - '!apps/plant/**'
+      - '!apps/wateringcan/**'
       - 'packages/**'
       - 'docker/**'
       - 'pnpm-lock.yaml'
