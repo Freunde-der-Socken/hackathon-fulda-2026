@@ -10,6 +10,12 @@ describe('NoiseView', () => {
     expect(wrapper.find('[role="meter"]').exists()).toBe(true);
     expect(wrapper.find('button').text()).toBe('Start measuring');
   });
+
+  it('offers the automatic mode for silent phases', () => {
+    const wrapper = mount(NoiseView);
+    expect(wrapper.text()).toContain('Silent phases');
+    expect(wrapper.findAll('button').map((b) => b.text())).toContain('Get ready');
+  });
 });
 
 describe('toDb', () => {

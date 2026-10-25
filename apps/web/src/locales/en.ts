@@ -172,6 +172,21 @@ export default {
     noMicrophone: 'No microphone access: the page must be opened over HTTPS or localhost.',
     micFailed: 'Could not start the microphone',
     sendError: 'Sending the reading failed',
+    audioLocked: 'The browser blocks audio until you tap the page. Tap "Get ready" again.',
+    permissionDenied:
+      'Microphone access is blocked. Allow the microphone for this page in the browser settings, then tap "Get ready" again.',
+    auto: 'Silent phases',
+    autoHint:
+      'Tap "Get ready" once and leave this page open: the microphone switches on when the teacher starts a silent phase and off when it ends. Stopping the measurement by hand turns this off.',
+    arm: 'Get ready',
+    disarm: 'Turn off automatic mode',
+    autoWaiting: 'Ready, waiting for a silent phase. Microphone off.',
+    autoManual: 'Ready, no silent phase. Microphone on (started by hand).',
+    autoStarting: 'Silent phase since {since}, starting the microphone …',
+    autoActive: 'Silent phase since {since}. Microphone on.',
+    autoBlocked: 'Silent phase since {since}. Microphone off.',
+    statusFailed: 'Could not check for a silent phase: {error}',
+    statusError: 'Loading the silent phase failed',
   },
   notFound: {
     title: 'Page not found',

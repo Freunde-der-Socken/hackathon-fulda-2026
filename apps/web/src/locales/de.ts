@@ -175,6 +175,22 @@ export default {
       'Kein Zugriff aufs Mikrofon: Die Seite muss über HTTPS oder localhost geöffnet werden.',
     micFailed: 'Das Mikrofon konnte nicht gestartet werden',
     sendError: 'Der Messwert konnte nicht gesendet werden',
+    audioLocked:
+      'Der Browser blockiert Audio, bis du auf die Seite tippst. Tippe erneut auf „Bereit schalten“.',
+    permissionDenied:
+      'Der Zugriff aufs Mikrofon ist gesperrt. Erlaube das Mikrofon für diese Seite in den Browser-Einstellungen und tippe dann erneut auf „Bereit schalten“.',
+    auto: 'Ruhephasen',
+    autoHint:
+      'Tippe einmal auf „Bereit schalten“ und lass die Seite offen: Das Mikrofon geht an, wenn die Lehrkraft eine Ruhephase startet, und wieder aus, wenn sie endet. Wer die Messung von Hand beendet, schaltet das ab.',
+    arm: 'Bereit schalten',
+    disarm: 'Automatik ausschalten',
+    autoWaiting: 'Bereit, wartet auf eine Ruhephase. Mikrofon aus.',
+    autoManual: 'Bereit, keine Ruhephase. Mikrofon an (von Hand gestartet).',
+    autoStarting: 'Ruhephase seit {since}, Mikrofon wird gestartet …',
+    autoActive: 'Ruhephase seit {since}. Mikrofon an.',
+    autoBlocked: 'Ruhephase seit {since}. Mikrofon aus.',
+    statusFailed: 'Ruhephase konnte nicht abgefragt werden: {error}',
+    statusError: 'Die Ruhephase konnte nicht geladen werden',
   },
   notFound: {
     title: 'Seite nicht gefunden',
