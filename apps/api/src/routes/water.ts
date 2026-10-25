@@ -9,6 +9,7 @@ import {
   WaterSummary,
 } from '@repo/contracts';
 import { and, count, desc, eq, gte, isNull, lte, sql } from 'drizzle-orm';
+import type { FastifyBaseLogger } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { classes, sensorReadings, silentPhases, waterEvents } from '../db/schema';
 
@@ -34,6 +35,19 @@ export const water: FastifyPluginAsyncZod = async (app) => {
   async function assertClass(id: string) {
     const [row] = await app.db.select({ id: classes.id }).from(classes).where(eq(classes.id, id));
     if (!row) throw app.httpErrors.notFound(`Unknown class ${id}`);
+  }
+
+  // Sends the class's new total to the watering can display. Not awaited by the routes, so a slow
+  // or missing can never delays or fails the response.
+  function updateWateringCan(classId: string, log: FastifyBaseLogger) {
+    if (!app.hasDecorator('wateringCan')) return;
+    void (async () => {
+      const [row] = await app.db
+        .select({ total: sql<number>`coalesce(sum(${waterEvents.amount}), 0)`.mapWith(Number) })
+        .from(waterEvents)
+        .where(eq(waterEvents.classId, classId));
+      await app.wateringCan.send({ classId, total: row?.total ?? 0 }, log);
+    })().catch((err: unknown) => log.warn({ err }, 'Could not update the watering can'));
   }
 
   app.get(
@@ -94,6 +108,7 @@ export const water: FastifyPluginAsyncZod = async (app) => {
         .returning();
       if (!row) throw new Error('Insert into water_events returned no row');
       request.log.info({ classId, amount: row.amount }, 'Water awarded');
+      updateWateringCan(classId, request.log);
       return reply.code(201).send(toEvent(row));
     },
   );
@@ -183,6 +198,7 @@ export const water: FastifyPluginAsyncZod = async (app) => {
         { classId: phase.classId, quietShare: phase.quietShare, water: phase.water },
         'Silent phase ended',
       );
+      if (phase.water) updateWateringCan(phase.classId, request.log);
       return toPhase(phase);
     },
   );

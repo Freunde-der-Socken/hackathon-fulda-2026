@@ -92,11 +92,11 @@ The web dev server proxies `/api` to the API, so the browser only talks to port 
 
 Copy an `.env.example` to `.env` (git-ignored) to override its defaults.
 
-| File                    | Keys                                                                                                           |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `.env.example`          | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_PORT` (Compose), `API_PORT` (API and web proxy) |
-| `apps/api/.env.example` | `NODE_ENV`, `HOST`, `LOG_LEVEL`, `CORS_ORIGIN` (comma-separated), `DATABASE_URL` (unset disables the database) |
-| `apps/web/.env.example` | `VITE_API_URL` (empty uses the `/api` proxy), `WEB_PORT`, `API_TARGET` (proxy `/api` to e.g. the Pi)           |
+| File                    | Keys                                                                                                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.env.example`          | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_PORT` (Compose), `API_PORT` (API and web proxy)                                                      |
+| `apps/api/.env.example` | `NODE_ENV`, `HOST`, `LOG_LEVEL`, `CORS_ORIGIN` (comma-separated), `DATABASE_URL` (unset disables the database), `WATERING_CAN_URL` (unset sends nothing to the can) |
+| `apps/web/.env.example` | `VITE_API_URL` (empty uses the `/api` proxy), `WEB_PORT`, `API_TARGET` (proxy `/api` to e.g. the Pi)                                                                |
 
 The API validates its variables at startup and exits with a readable list if one is invalid. `DATABASE_URL` must match the `POSTGRES_*` values in the root `.env`. Variables already set in the environment (for example by the devcontainer) win over `.env`.
 
@@ -232,6 +232,7 @@ On the Pi, use `http://<Pi IP>/api/...` instead. `docker compose -f compose.prod
 | `SITE_ADDRESS`               | `:80` (default) is plain HTTP. A domain name makes Caddy fetch an HTTPS certificate   |
 | `TLS_DEFAULT_SNI`            | The single IP when `SITE_ADDRESS` contains an IP, so the TLS handshake works          |
 | `CORS_ORIGIN`                | Only needed if the browser loads the app from another origin than the web container   |
+| `WATERING_CAN_URL`           | Base URL of the watering can. The API POSTs the water total to `<url>/water`          |
 | `WEB_PORT`, `WEB_HTTPS_PORT` | Published ports (80, 443)                                                             |
 
 ### Prebuilt images (GHCR)
