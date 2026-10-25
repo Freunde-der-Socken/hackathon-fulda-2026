@@ -23,6 +23,7 @@ const TITLES: Record<string, string> = {
   '°C': 'Temperature',
   '%': 'Humidity',
   adc: 'Light (LDR)',
+  lx: 'Light',
   dB: 'Noise',
   dBFS: 'Noise',
 };
@@ -31,6 +32,27 @@ export const groupTitle = (unit: string) => TITLES[unit] ?? (unit || 'No unit');
 
 /** Unit as shown next to a value. */
 export const unitLabel = (unit: string) => (unit === 'C' ? '°C' : unit === 'adc' ? 'raw' : unit);
+
+/** 12-bit ADC (ESP32) referenced to 3.3 V. */
+const ADC_MAX = 4095;
+const VCC = 3.3;
+/** Voltage divider: LDR to 3.3 V, fixed 10 kΩ to ground, so the voltage rises with light. */
+const R_FIXED = 10_000;
+/** GL5528 LDR, typical datasheet values: about 15 kΩ at 10 lx, gamma 0.7. */
+const R_10LX = 15_000;
+const GAMMA = 0.7;
+
+/** U_out = ADC value × 3.3 V / 4095. */
+export const adcToVolts = (adc: number) => (adc * VCC) / ADC_MAX;
+
+/** Raw LDR reading to an estimated illuminance in lux. Uncalibrated, so only roughly absolute. */
+export function adcToLux(adc: number) {
+  // Full scale would mean a 0 Ω LDR, so cap one step below it
+  const volts = adcToVolts(Math.min(Math.max(adc, 0), ADC_MAX - 1));
+  if (volts === 0) return 0;
+  const rLdr = (R_FIXED * (VCC - volts)) / volts;
+  return 10 * (R_10LX / rLdr) ** (1 / GAMMA);
+}
 
 const median = (values: number[]) => {
   const sorted = values.toSorted((a, b) => a - b);
@@ -58,16 +80,17 @@ export function markOutliers(values: number[], window = 3): boolean[] {
   });
 }
 
-/** Groups readings by unit, then by sensor, sorted by time. */
+/** Groups readings by unit, then by sensor, sorted by time. Raw LDR values become lux. */
 export function groupReadings(readings: SensorReading[]): SensorGroup[] {
   const byUnit = new Map<string, Map<string, { t: number; value: number }[]>>();
   for (const r of readings) {
-    const unit = r.unit ?? '';
+    const isAdc = r.unit === 'adc';
+    const unit = isAdc ? 'lx' : (r.unit ?? '');
     const bySensor = byUnit.get(unit) ?? new Map();
     byUnit.set(unit, bySensor);
     const points = bySensor.get(r.sensorId) ?? [];
     bySensor.set(r.sensorId, points);
-    points.push({ t: Date.parse(r.recordedAt), value: r.value });
+    points.push({ t: Date.parse(r.recordedAt), value: isAdc ? adcToLux(r.value) : r.value });
   }
   return [...byUnit]
     .map(([unit, bySensor]) => ({
