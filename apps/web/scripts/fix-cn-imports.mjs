@@ -23,4 +23,4 @@ for (const file of walk(root)) {
     changed++;
   }
 }
-console.log(`Fixed the cn import in ${changed} file(s).`);
+process.stdout.write(`Fixed the cn import in ${changed} file(s).\n`);

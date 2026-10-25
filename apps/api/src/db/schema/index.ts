@@ -1,4 +1,5 @@
-// Export every table file from here, e.g. `export * from './todos';`
-// The empty export keeps this a module until the first table exists.
-// oxlint-disable-next-line unicorn/require-module-specifiers
-export {};
+export * from './classes';
+export * from './plant-classes';
+export * from './plants';
+export * from './sensor-readings';
+export * from './water';

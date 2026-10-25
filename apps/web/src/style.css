@@ -3,48 +3,80 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Neutral shadcn-vue theme. The team brand colour replaces --primary later. */
+/*
+ * Theme tokens. Green is the plant (--primary), blue the water the class earns (--water), amber a
+ * warning such as bad air (--warning). The green is a stand-in until the team picks its colour:
+ * change --primary and --ring here (and in .dark) and every page follows. Surfaces stay neutral so
+ * the chart series below keep their contrast.
+ */
 :root {
   --radius: 0.625rem;
+  /* Chart series in fixed order, never cycled: neighbours stay apart for colour-blind readers */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #6250d6;
+  --series-8: #e34948;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.52 0.13 152);
+  --primary-foreground: oklch(0.985 0.01 152);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --accent: oklch(0.96 0.03 152);
+  --accent-foreground: oklch(0.32 0.08 152);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: oklch(0.62 0.13 152);
+  --water: oklch(0.55 0.15 245);
+  --water-foreground: oklch(0.985 0.01 245);
+  --warning: oklch(0.7 0.16 70);
+  --warning-foreground: oklch(0.22 0.05 70);
 }
 
 .dark {
+  /* Native controls (checkboxes, scrollbars) follow the theme too */
+  color-scheme: dark;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+  --series-8: #e66767;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: oklch(0.74 0.15 152);
+  --primary-foreground: oklch(0.2 0.04 152);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.3 0.04 152);
+  --accent-foreground: oklch(0.93 0.04 152);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --ring: oklch(0.6 0.12 152);
+  --water: oklch(0.7 0.13 245);
+  --water-foreground: oklch(0.2 0.05 245);
+  --warning: oklch(0.78 0.15 75);
+  --warning-foreground: oklch(0.22 0.05 70);
 }
 
 @theme inline {
@@ -66,6 +98,10 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-water: var(--water);
+  --color-water-foreground: var(--water-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

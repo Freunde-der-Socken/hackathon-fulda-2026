@@ -5,6 +5,16 @@ export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/', name: 'home', component: HomeView },
+    { path: '/lesson', name: 'lesson', component: () => import('@/views/LessonView.vue') },
+    { path: '/review', name: 'review', component: () => import('@/views/ReviewView.vue') },
+    { path: '/noise', name: 'noise', component: () => import('@/views/NoiseView.vue') },
+    {
+      path: '/sensors',
+      name: 'sensors',
+      component: () => import('@/views/SensorsView.vue'),
+      meta: { fullWidth: true },
+    },
+    { path: '/classes', name: 'classes', component: () => import('@/views/ClassesView.vue') },
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
@@ -12,3 +22,10 @@ export const router = createRouter({
     },
   ],
 });
+
+declare module 'vue-router' {
+  interface RouteMeta {
+    /** Use the whole width next to the sidebar instead of the readable max-w-4xl column. */
+    fullWidth?: boolean;
+  }
+}

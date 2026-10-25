@@ -1,4 +1,12 @@
-# SITE_ADDRESS: ":80" for plain HTTP (local, Raspberry Pi), a domain name for automatic HTTPS
+{
+	# Browsers send no SNI for an IP address, and behind Docker the connection's local address is
+	# the container's, so without this an IP in SITE_ADDRESS fails the TLS handshake. Set
+	# TLS_DEFAULT_SNI to that single IP. Not derived from SITE_ADDRESS, which may be a list.
+	default_sni {$TLS_DEFAULT_SNI:localhost}
+}
+
+# SITE_ADDRESS: ":80" for plain HTTP (local, Raspberry Pi), a domain name or IP for automatic HTTPS,
+# or a comma-separated list such as "10.0.0.5, :80" for both
 {$SITE_ADDRESS::80} {
 	encode zstd gzip
 

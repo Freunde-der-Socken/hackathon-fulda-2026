@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/Holytrashbag/hackathon-fulda-2026/actions/workflows/ci.yml/badge.svg)](https://github.com/Holytrashbag/hackathon-fulda-2026/actions/workflows/ci.yml)
 
+Prototype of a classroom mascot: a physical plant that reacts live to CO2 and noise in the classroom and grows with the points the class earns, with a web app for the teacher. What we're building and what's still open is in [`docs/concept.md`](docs/concept.md).
+
 A TypeScript monorepo (pnpm workspaces + Turborepo) for a Vue 3 web app and a Fastify API that share Zod schemas. The web app uses Vite, Vue Router, Pinia, Tailwind v4 and shadcn-vue. The API uses Fastify 5 with optional Postgres (Drizzle). Browser and hardware both talk to it over REST. Lint and format run with oxlint and oxfmt.
 
 ## What's in here
@@ -16,6 +18,7 @@ packages/
   ml/                     Model save/load helpers (TensorFlow.js)   README: packages/ml/README.md
   oxc-config/             oxlint presets and the oxfmt config        README: packages/oxc-config/README.md
   typescript-config/      tsconfig presets (base, node, vue)         README: packages/typescript-config/README.md
+docs/concept.md           The project: hardware, plant modes, points, pages, open decisions
 compose.yaml              Postgres for local development
 .devcontainer/            VS Code devcontainer (Node, pnpm, Docker CLI, extensions)
 ```
@@ -57,6 +60,7 @@ Run them from the repo root.
 | ----------------------------------------------- | ----------------------------------------------------------- |
 | `pnpm dev`                                      | Web and API in watch mode (through Turbo)                   |
 | `pnpm --filter @repo/web dev:host`              | Web dev server reachable from other devices on your network |
+| `pnpm --filter @repo/web dev:https`             | Same over HTTPS (self-signed), for microphone/camera access |
 | `pnpm build`                                    | Typecheck and build everything                              |
 | `pnpm lint` / `pnpm typecheck`                  | oxlint / `tsc` and `vue-tsc` in every package               |
 | `pnpm test`                                     | Run the Vitest tests of every package once (not part of CI) |
@@ -68,7 +72,7 @@ Run them from the repo root.
 | `pnpm db:migrate`                               | Apply the SQL migrations in `apps/api/drizzle/`             |
 | `pnpm --filter @repo/api db:generate`           | Create a migration from schema changes                      |
 | `pnpm --filter @repo/api db:push` / `db:studio` | Sync the schema without a migration / open Drizzle Studio   |
-| `pnpm --filter @repo/api db:seed`               | Run `apps/api/src/db/seed.ts`                               |
+| `pnpm db:seed`                                  | Run the seed in `apps/api/src/db/seed-data.ts`              |
 
 ## Ports & URLs
 
@@ -90,7 +94,7 @@ Copy an `.env.example` to `.env` (git-ignored) to override its defaults.
 | ----------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `.env.example`          | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_PORT` (Compose), `API_PORT` (API and web proxy) |
 | `apps/api/.env.example` | `NODE_ENV`, `HOST`, `LOG_LEVEL`, `CORS_ORIGIN` (comma-separated), `DATABASE_URL` (unset disables the database) |
-| `apps/web/.env.example` | `VITE_API_URL` (empty uses the `/api` proxy), `WEB_PORT`                                                       |
+| `apps/web/.env.example` | `VITE_API_URL` (empty uses the `/api` proxy), `WEB_PORT`, `API_TARGET` (proxy `/api` to e.g. the Pi)           |
 
 The API validates its variables at startup and exits with a readable list if one is invalid. `DATABASE_URL` must match the `POSTGRES_*` values in the root `.env`. Variables already set in the environment (for example by the devcontainer) win over `.env`.
 
@@ -145,7 +149,8 @@ Details in [`apps/api/README.md`](apps/api/README.md).
 1. Put the phone and the computer on the same Wi-Fi.
 2. `pnpm --filter @repo/web dev:host`, and note the `Network:` address that Vite prints (the LAN IP of your computer).
 3. Open `http://<that IP>:5173` on the phone. The `/api` proxy works the same way, so the API needs no change.
-4. On WSL the address Vite prints is the WSL one. Forward the port from Windows (`netsh interface portproxy add v4tov4 listenport=5173 connectaddress=<WSL IP> connectport=5173`, as admin) and allow it in the Windows firewall.
+4. Microphone, camera and motion sensors only work on secure origins, which a LAN IP over http is not. For those, run `pnpm --filter @repo/web dev:https` instead and open `https://<that IP>:5173`. The certificate is self-signed, so accept the browser warning once (Advanced → Proceed).
+5. On WSL the address Vite prints is the WSL one. Forward the port from Windows (`netsh interface portproxy add v4tov4 listenport=5173 connectaddress=<WSL IP> connectport=5173`, as admin) and allow it in the Windows firewall.
 
 ## Connect a device
 
@@ -223,6 +228,7 @@ On the Pi, use `http://<Pi IP>/api/...` instead. `docker compose -f compose.prod
 | ---------------------------- | ------------------------------------------------------------------------------------- |
 | `POSTGRES_PASSWORD`          | Required. Password of the database user (`POSTGRES_USER`, `POSTGRES_DB` are optional) |
 | `SITE_ADDRESS`               | `:80` (default) is plain HTTP. A domain name makes Caddy fetch an HTTPS certificate   |
+| `TLS_DEFAULT_SNI`            | The single IP when `SITE_ADDRESS` contains an IP, so the TLS handshake works          |
 | `CORS_ORIGIN`                | Only needed if the browser loads the app from another origin than the web container   |
 | `WEB_PORT`, `WEB_HTTPS_PORT` | Published ports (80, 443)                                                             |
 
@@ -242,7 +248,7 @@ docker compose -f compose.prod.yaml --env-file .env.prod up -d --wait
 - Check the platforms: `docker buildx imagetools inspect ghcr.io/freunde-der-socken/hackathon-fulda-2026-api:latest`.
 - Pull requests that touch app sources, the lockfile or a Dockerfile build both images (without pushing), so a broken Dockerfile fails there.
 
-The API applies the SQL migrations in `apps/api/drizzle/` itself when it starts in production. Caddy keeps its certificates in the `caddy-data` volume. `docker compose -f compose.prod.yaml --env-file .env.prod down -v` deletes all data.
+The API applies the SQL migrations in `apps/api/drizzle/` and runs the seed (`apps/api/src/db/seed-data.ts`) itself when it starts in production. Caddy keeps its certificates in the `caddy-data` volume. `docker compose -f compose.prod.yaml --env-file .env.prod down -v` deletes all data.
 
 ### Deploy to the Pi
 

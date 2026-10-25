@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { env } from '../env';
 import * as schema from './schema';
+import { seed } from './seed-data';
 
 if (!env.DATABASE_URL) {
   process.stderr.write('DATABASE_URL is not set, nothing to seed.\n');
@@ -11,9 +12,7 @@ if (!env.DATABASE_URL) {
 const client = postgres(env.DATABASE_URL, { max: 1 });
 export const db = drizzle(client, { schema, casing: 'snake_case' });
 
-// Keep the seed idempotent so it can run as often as you like: use fixed ids plus
-// `.onConflictDoNothing()`, e.g.
-//   await db.insert(schema.todos).values({ id: '…', title: 'First' }).onConflictDoNothing();
+await seed(db);
 
 await client.end();
-process.stdout.write('Nothing to seed yet.\n');
+process.stdout.write('Seeded the demo class, plant and their mapping.\n');

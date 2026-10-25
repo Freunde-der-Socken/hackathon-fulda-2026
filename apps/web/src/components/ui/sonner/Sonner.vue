@@ -10,6 +10,9 @@ import {
 } from '@lucide/vue';
 import { cn } from '@/lib/utils';
 import { Toaster as Sonner } from 'vue-sonner';
+// vue-sonner 2 ships its styles separately; without them toasts render unstyled
+// oxlint-disable-next-line import/no-unassigned-import
+import 'vue-sonner/style.css';
 
 const props = defineProps<ToasterProps>();
 </script>

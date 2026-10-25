@@ -22,11 +22,11 @@ async function request<T extends z.ZodType>(
 ): Promise<z.infer<T>> {
   const res = await fetch(`${API_BASE}${path}`, {
     method,
+    // No Content-Type without a body: fetch would send `undefined` as text, which Fastify rejects
     headers: {
       Accept: 'application/json',
-      ...(body === undefined && { 'Content-Type': undefined }),
       ...(body !== undefined && { 'Content-Type': 'application/json' }),
-    } as Record<string, string>,
+    },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   if (!res.ok) {
