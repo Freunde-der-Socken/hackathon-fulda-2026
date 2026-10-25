@@ -51,6 +51,18 @@ export const SilentPhase = z.object({
 export type SilentPhase = z.infer<typeof SilentPhase>;
 
 /**
+ * `GET /api/plants/:id/silent-phase`: the running silent phase of the plant's class. Devices that
+ * only know their plant id, like the noise page, poll it to start and stop measuring on their own.
+ */
+export const PlantSilentPhase = z.object({
+  plantId: Id,
+  /** Null while the plant has no class, and then there is no phase either. */
+  classId: Id.nullable(),
+  activeSilentPhase: SilentPhase.nullable(),
+});
+export type PlantSilentPhase = z.infer<typeof PlantSilentPhase>;
+
+/**
  * `GET /api/classes/:id/water`. The measuring phase (day or week) is a time window, so the caller
  * passes its start as `from`. Without `from` and `to`, all water counts.
  */

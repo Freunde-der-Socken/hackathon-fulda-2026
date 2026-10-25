@@ -1,19 +1,26 @@
 <script setup lang="ts">
-import { DEMO_PLANT_ID, SensorReading, SensorReadingInput } from '@repo/contracts';
+import {
+  DEMO_PLANT_ID,
+  PlantSilentPhase,
+  SensorReading,
+  SensorReadingInput,
+  type SilentPhase,
+} from '@repo/contracts';
 import { useIntervalFn, useLocalStorage, useWakeLock } from '@vueuse/core';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { I18nT, useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { apiPost } from '@/lib/api';
+import { apiGet, apiPost } from '@/lib/api';
 import { MIN_DB, SPL_OFFSET, toSpl, useMicLevel } from '@/composables/useMicLevel';
 
 const SEND_INTERVAL_MS = 1000;
+const POLL_INTERVAL_MS = 3000;
 
 const { t, d, n } = useI18n();
 
-const { level, peak, running, start, stop, takeAverage } = useMicLevel();
+const { level, peak, running, prepare, start, stop, takeAverage } = useMicLevel();
 const wakeLock = useWakeLock();
 
 // One id per phone, so readings of several phones can be told apart
@@ -31,20 +38,109 @@ const format = (db: number) => (running.value ? n(toSpl(db), 'oneDecimal') : 'â€
 const levelWidth = computed(() => percent(level.value));
 const peakLeft = computed(() => percent(peak.value));
 
+function micError(error: unknown) {
+  if (error instanceof DOMException && error.name === 'NotAllowedError') {
+    return t('noise.permissionDenied');
+  }
+  return error instanceof Error ? error.message : t('noise.micFailed');
+}
+
+// Automatic mode: the phone waits for a silent phase of the plant's class and measures while it
+// runs. Not remembered across reloads, because the browser wants a new tap after one.
+const armed = ref(false);
+const phase = ref<SilentPhase | null>(null);
+const statusError = ref<string>();
+const autoError = ref<string>();
+let autoStarted = false;
+let switching = false;
+
+// Chrome pauses the page when the screen turns off, which would also miss the next phase
+watch([armed, running], ([isArmed, isRunning]) => {
+  if (!wakeLock.isSupported.value) return;
+  // Best effort: without the lock the page still works while the screen is on
+  const done = isArmed || isRunning ? wakeLock.request('screen') : wakeLock.release();
+  done.catch(() => undefined);
+});
+
 async function toggle() {
   if (running.value) {
     stop();
-    await wakeLock.release();
+    // Otherwise the next poll would switch it back on during a phase
+    armed.value = false;
     return;
   }
   try {
     await start();
-    // Chrome pauses the page when the screen turns off
-    if (wakeLock.isSupported.value) await wakeLock.request('screen');
+    autoStarted = false;
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('noise.micFailed'));
+    toast.error(micError(error));
   }
 }
+
+async function arm() {
+  try {
+    await prepare();
+    autoError.value = undefined;
+    armed.value = true;
+    await poll();
+  } catch (error) {
+    autoError.value = micError(error);
+  }
+}
+
+function disarm() {
+  armed.value = false;
+  phase.value = null;
+  statusError.value = undefined;
+  autoError.value = undefined;
+  if (autoStarted && running.value) stop();
+}
+
+// Starts or stops the microphone to match the phase. A failed start is retried on the next poll.
+async function follow() {
+  if (!armed.value || switching) return;
+  switching = true;
+  try {
+    if (!phase.value) autoError.value = undefined;
+    if (phase.value && !running.value) {
+      await start();
+      autoStarted = true;
+      autoError.value = undefined;
+    } else if (!phase.value && running.value && autoStarted) {
+      stop();
+    }
+  } catch (error) {
+    autoError.value = micError(error);
+  } finally {
+    switching = false;
+  }
+}
+
+let polling = false;
+async function poll() {
+  if (!armed.value || polling) return;
+  polling = true;
+  try {
+    // No plant picker yet, so every phone follows the seeded demo plant
+    const status = await apiGet(`/plants/${DEMO_PLANT_ID}/silent-phase`, PlantSilentPhase);
+    if (!armed.value) return;
+    phase.value = status.activeSilentPhase;
+    statusError.value = undefined;
+  } catch (error) {
+    statusError.value = error instanceof Error ? error.message : t('noise.statusError');
+  } finally {
+    polling = false;
+  }
+  await follow();
+}
+useIntervalFn(poll, POLL_INTERVAL_MS);
+
+const autoStatus = computed(() => {
+  if (!phase.value) return running.value ? t('noise.autoManual') : t('noise.autoWaiting');
+  const since = d(new Date(phase.value.startedAt), 'time');
+  if (running.value) return t('noise.autoActive', { since });
+  return autoError.value ? t('noise.autoBlocked', { since }) : t('noise.autoStarting', { since });
+});
 
 let inFlight = false;
 useIntervalFn(async () => {
@@ -125,6 +221,47 @@ useIntervalFn(async () => {
 
         <Button size="lg" class="w-full" @click="toggle">
           {{ running ? t('noise.stop') : t('noise.start') }}
+        </Button>
+      </CardContent>
+    </Card>
+
+    <Card>
+      <CardHeader>
+        <CardTitle>{{ t('noise.auto') }}</CardTitle>
+        <CardDescription>{{ t('noise.autoHint') }}</CardDescription>
+      </CardHeader>
+      <CardContent class="flex flex-col gap-3 text-sm">
+        <div v-if="armed" class="flex items-center gap-2" role="status">
+          <span
+            class="size-2.5 shrink-0 rounded-full"
+            :class="running ? 'bg-primary' : 'bg-muted-foreground/40'"
+            aria-hidden="true"
+          />
+          <span>{{ autoStatus }}</span>
+        </div>
+        <p
+          v-if="autoError"
+          class="rounded-md border border-destructive/50 p-3 text-destructive"
+          role="alert"
+        >
+          {{ autoError }}
+        </p>
+        <p v-if="statusError" class="text-destructive" role="alert">
+          {{ t('noise.statusFailed', { error: statusError }) }}
+        </p>
+        <!-- After an error the browser wants a new tap, so "Get ready" comes back -->
+        <Button
+          v-if="!armed || autoError"
+          variant="secondary"
+          size="lg"
+          class="w-full"
+          :disabled="!secure"
+          @click="arm"
+        >
+          {{ t('noise.arm') }}
+        </Button>
+        <Button v-if="armed" variant="outline" size="lg" class="w-full" @click="disarm">
+          {{ t('noise.disarm') }}
         </Button>
       </CardContent>
     </Card>

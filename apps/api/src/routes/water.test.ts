@@ -1,4 +1,4 @@
-import { DEMO_CLASS_ID } from '@repo/contracts';
+import { DEMO_CLASS_ID, DEMO_PLANT_ID } from '@repo/contracts';
 import { afterAll, describe, expect, it } from 'vitest';
 import { buildApp } from '../app';
 
@@ -10,6 +10,12 @@ describe('water', () => {
   it('is not registered without a database', async () => {
     const app = await appPromise;
     const res = await app.inject({ url: `/api/classes/${DEMO_CLASS_ID}/water` });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('has no plant silent phase route without a database', async () => {
+    const app = await appPromise;
+    const res = await app.inject({ url: `/api/plants/${DEMO_PLANT_ID}/silent-phase` });
     expect(res.statusCode).toBe(404);
   });
 });

@@ -2,6 +2,7 @@ import {
   AwardWaterBody,
   ErrorResponse,
   IdParams,
+  PlantSilentPhase,
   SilentPhase,
   WATER_RULES,
   WaterEvent,
@@ -11,7 +12,14 @@ import {
 import { and, count, desc, eq, gte, isNull, lte, sql } from 'drizzle-orm';
 import type { FastifyBaseLogger } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
-import { classes, sensorReadings, silentPhases, waterEvents } from '../db/schema';
+import {
+  classes,
+  plantClasses,
+  plants,
+  sensorReadings,
+  silentPhases,
+  waterEvents,
+} from '../db/schema';
 
 const toEvent = (row: typeof waterEvents.$inferSelect): WaterEvent => ({
   id: row.id,
@@ -85,6 +93,30 @@ export const water: FastifyPluginAsyncZod = async (app) => {
         total: events.reduce((sum, e) => sum + e.amount, 0),
         events: events.map(toEvent),
         activeSilentPhase: active ? toPhase(active) : null,
+      };
+    },
+  );
+
+  // Polled by the noise page every few seconds, so it switches the microphone on and off
+  app.get(
+    '/plants/:id/silent-phase',
+    { schema: { params: IdParams, response: { 200: PlantSilentPhase, 404: ErrorResponse } } },
+    async (request) => {
+      const plantId = request.params.id;
+      const [row] = await app.db
+        .select({ classId: plantClasses.classId, phase: silentPhases })
+        .from(plants)
+        .leftJoin(plantClasses, eq(plantClasses.plantId, plants.id))
+        .leftJoin(
+          silentPhases,
+          and(eq(silentPhases.classId, plantClasses.classId), isNull(silentPhases.endedAt)),
+        )
+        .where(eq(plants.id, plantId));
+      if (!row) throw app.httpErrors.notFound(`Unknown plant ${plantId}`);
+      return {
+        plantId,
+        classId: row.classId,
+        activeSilentPhase: row.phase ? toPhase(row.phase) : null,
       };
     },
   );
