@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 // The digital plant (docs/concept.md, watering mode): a sprout at 0 that grows leaves and a bud
 // and blooms in colour at 1, like the physical plant's stalk and LED ring.
@@ -23,10 +24,16 @@ const leaves = computed(() =>
 );
 
 const PETALS = [5, 4, 7, 2, 5, 4];
+
+const { t } = useI18n();
 </script>
 
 <template>
-  <svg viewBox="0 0 100 120" role="img" :aria-label="`Plant, ${Math.round(g * 100)} % grown`">
+  <svg
+    viewBox="0 0 100 120"
+    role="img"
+    :aria-label="t('plant.label', { percent: Math.round(g * 100) })"
+  >
     <path
       :d="`M50 ${GROUND} L50 ${top}`"
       stroke="var(--primary)"

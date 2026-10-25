@@ -4,6 +4,7 @@ import { DropletIcon } from '@lucide/vue';
 import { useLocalStorage } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import ClassPicker from '@/components/ClassPicker.vue';
 import PlantGrowth from '@/components/PlantGrowth.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +18,8 @@ import { useClassesStore } from '@/stores/classes';
 // The class review (docs/concept.md, page 4): the plant of every day or week, like a calendar
 const WEEKS = 8;
 const DAYS = 28;
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+const { t, d } = useI18n();
 
 const { selectedId: classId } = storeToRefs(useClassesStore());
 // Which phase length a class uses is still open, so the review can show both
@@ -37,7 +39,7 @@ async function load() {
     summary.value = result;
     error.value = undefined;
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Loading the water failed';
+    error.value = e instanceof Error ? e.message : t('errors.loadWater');
   }
 }
 void load();
@@ -68,15 +70,17 @@ const phases = computed(() => {
 });
 const current = computed(() => phases.value.find((p) => p.current)!);
 
-const dateLabel = (d: Date) => d.toLocaleDateString([], { day: 'numeric', month: 'short' });
+// The day grid starts on a Monday, like phaseStarts
+const weekdays = computed(() => phaseStarts('day', 7).map((day) => d(day, 'weekday')));
+const dateLabel = (date: Date) => d(date, 'dayMonth');
 const phaseLabel = (p: { start: Date }) =>
-  kind.value === 'week' ? `Week of ${dateLabel(p.start)}` : dateLabel(p.start);
+  kind.value === 'week' ? t('review.weekOf', { date: dateLabel(p.start) }) : dateLabel(p.start);
 </script>
 
 <template>
   <div class="flex flex-col gap-4">
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <h1 class="text-2xl font-semibold">Review</h1>
+      <h1 class="text-2xl font-semibold">{{ t('review.title') }}</h1>
       <ClassPicker />
     </div>
 
@@ -85,11 +89,15 @@ const phaseLabel = (p: { start: Date }) =>
       variant="outline"
       class="text-sm"
       :model-value="kind"
-      aria-label="Phase length"
+      :aria-label="t('review.phaseLength')"
       @update:model-value="setKind"
     >
-      <ToggleGroupItem value="day" class="min-h-11 md:min-h-9">Days</ToggleGroupItem>
-      <ToggleGroupItem value="week" class="min-h-11 md:min-h-9">Weeks</ToggleGroupItem>
+      <ToggleGroupItem value="day" class="min-h-11 md:min-h-9">{{
+        t('review.days')
+      }}</ToggleGroupItem>
+      <ToggleGroupItem value="week" class="min-h-11 md:min-h-9">{{
+        t('review.weeks')
+      }}</ToggleGroupItem>
     </ToggleGroup>
 
     <p
@@ -102,10 +110,13 @@ const phaseLabel = (p: { start: Date }) =>
 
     <Card>
       <CardHeader>
-        <CardTitle>{{ kind === 'week' ? 'This week' : 'Today' }}</CardTitle>
+        <CardTitle>{{ kind === 'week' ? t('review.thisWeek') : t('review.today') }}</CardTitle>
         <CardDescription>
-          The plant starts as a sprout every {{ kind }} and blooms with
-          {{ WATER_RULES.fullBloom[kind] }} water.
+          {{
+            t(kind === 'week' ? 'review.restartsWeek' : 'review.restartsDay', {
+              water: WATER_RULES.fullBloom[kind],
+            })
+          }}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -120,13 +131,13 @@ const phaseLabel = (p: { start: Date }) =>
             <Progress
               :model-value="percent(current.growth)"
               class="h-3 bg-water/20 *:bg-water"
-              :aria-label="`${percent(current.growth)} % to full bloom`"
+              :aria-label="t('review.toFullBloom', { percent: percent(current.growth) })"
             />
             <p class="text-sm text-muted-foreground">
               {{
                 current.growth >= 1
-                  ? 'In full bloom!'
-                  : `${WATER_RULES.fullBloom[kind] - current.water} more water to full bloom`
+                  ? t('review.fullBloom')
+                  : t('review.moreWater', { water: WATER_RULES.fullBloom[kind] - current.water })
               }}
             </p>
           </div>
@@ -136,9 +147,9 @@ const phaseLabel = (p: { start: Date }) =>
 
     <Card>
       <CardHeader>
-        <CardTitle>{{
-          kind === 'week' ? `Last ${WEEKS} weeks` : `Last ${DAYS / 7} weeks`
-        }}</CardTitle>
+        <CardTitle>
+          {{ t('review.lastWeeks', { count: kind === 'week' ? WEEKS : DAYS / 7 }) }}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <Skeleton v-if="!summary && !error" class="h-48 w-full" />
@@ -152,7 +163,9 @@ const phaseLabel = (p: { start: Date }) =>
             <PlantGrowth :growth="p.growth" class="h-16 w-14" />
             <span class="text-xs text-muted-foreground">{{ dateLabel(p.start) }}</span>
             <span class="text-sm font-medium text-water tabular-nums">{{ p.water }}</span>
-            <span class="sr-only">{{ phaseLabel(p) }}: {{ percent(p.growth) }} % grown</span>
+            <span class="sr-only">
+              {{ t('review.grown', { phase: phaseLabel(p), percent: percent(p.growth) }) }}
+            </span>
           </li>
         </ol>
         <div v-else>
@@ -160,7 +173,7 @@ const phaseLabel = (p: { start: Date }) =>
             class="mb-1 grid grid-cols-7 gap-1 text-center text-xs text-muted-foreground"
             aria-hidden="true"
           >
-            <span v-for="d in WEEKDAYS" :key="d">{{ d }}</span>
+            <span v-for="day in weekdays" :key="day">{{ day }}</span>
           </div>
           <ol class="grid grid-cols-7 gap-1">
             <li
@@ -175,8 +188,15 @@ const phaseLabel = (p: { start: Date }) =>
                 {{ p.start.getDate() }}
               </span>
               <span class="sr-only">
-                {{ phaseLabel(p) }}:
-                {{ p.future ? 'not yet' : `${p.water} water, ${percent(p.growth)} % grown` }}
+                {{
+                  p.future
+                    ? t('review.notYet', { phase: phaseLabel(p) })
+                    : t('review.dayGrown', {
+                        phase: phaseLabel(p),
+                        water: p.water,
+                        percent: percent(p.growth),
+                      })
+                }}
               </span>
             </li>
           </ol>

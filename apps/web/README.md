@@ -30,6 +30,19 @@ const health = await apiGet('/health', HealthResponse); // typed as HealthRespon
 
 Show errors with `toast.error(...)` from `vue-sonner`. The `<Toaster />` is already in the layout.
 
+## Texts and languages
+
+The app speaks English and German ([vue-i18n](https://vue-i18n.intlify.dev), Composition API). Every visible text lives in `src/locales/en.ts`, with the German one under the same key in `src/locales/de.ts` (TypeScript fails the build if a key is missing). In a component:
+
+```ts
+const { t, d, n } = useI18n();
+t('lesson.awarded', { amount: 3 }); // "+3 water" / "+3 Wasser"
+d(date, 'time'); // dates and times: formats in src/lib/i18n.ts
+n(value, 'precise'); // numbers, e.g. 54.3 / 54,3
+```
+
+Outside components use `i18n.global.t` from `@/lib/i18n`. For text around markup such as `<code>`, use `<I18nT keypath="..." scope="global">` with a slot per parameter. The start language follows the browser (fallback English), the picker in the layout calls `setLocale`, which also sets `<html lang>` and remembers the choice. Tests run in English (`src/test-setup.ts`).
+
 ## Design library
 
 Colours are tokens in `src/style.css`, set for light (`:root`) and dark (`.dark`). Use them as Tailwind classes (`bg-primary`, `text-water`, ...), never as hex values in components. Dark mode follows the system until someone uses the sun/moon button in the layout (`useDark`).

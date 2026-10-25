@@ -1,4 +1,5 @@
 import { onScopeDispose, ref } from 'vue';
+import { i18n } from '@/lib/i18n';
 
 /** Floor of the scale: 16-bit audio can't resolve anything quieter. */
 export const MIN_DB = -96;
@@ -70,7 +71,7 @@ export function useMicLevel() {
   async function start() {
     if (running.value) return;
     if (!navigator.mediaDevices?.getUserMedia) {
-      throw new Error('No microphone access: the page must be opened over HTTPS or localhost.');
+      throw new Error(i18n.global.t('noise.noMicrophone'));
     }
     // Without these filters the browser treats the input as speech and hides the real ambient level
     stream = await navigator.mediaDevices.getUserMedia({

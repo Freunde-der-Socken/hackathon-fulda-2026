@@ -3,6 +3,7 @@ import { WATER_RULES, WaterSummary } from '@repo/contracts';
 import { ChevronRightIcon, DropletIcon, TimerIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import ClassPicker from '@/components/ClassPicker.vue';
 import PlantGrowth from '@/components/PlantGrowth.vue';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,18 +12,13 @@ import { navItems } from '@/lib/navigation';
 import { phaseStart } from '@/lib/phases';
 import { useClassesStore } from '@/stores/classes';
 
-// One line per page, shown on its card. Pages without one (Home, API docs) get no card.
-const DESCRIPTIONS: Record<string, string> = {
-  '/lesson': 'Start a silent phase and award water during the lesson.',
-  '/sensors': "Temperature, humidity, light and noise of the class's plant as charts.",
-  '/review': 'The plant of every day and week, to look back on with the class.',
-  '/classes': 'Create classes and plants and connect them.',
-  '/noise': 'Turns a phone into the noise sensor of the room.',
-};
+const { t, te } = useI18n();
+
+// Pages with a description in `home.descriptions` get a card, the others (Home, API docs) don't
 const pages = computed(() =>
   navItems.flatMap((item) => {
-    const description = DESCRIPTIONS[item.to];
-    return description ? [{ ...item, description }] : [];
+    const key = `home.descriptions.${item.id}`;
+    return te(key) ? [{ ...item, label: t(`nav.${item.id}`), description: t(key) }] : [];
   }),
 );
 
@@ -50,7 +46,7 @@ watch(classId, load);
 <template>
   <div class="flex flex-col gap-6">
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <h1 class="text-2xl font-semibold">Hello!</h1>
+      <h1 class="text-2xl font-semibold">{{ t('home.greeting') }}</h1>
       <ClassPicker />
     </div>
 
@@ -59,7 +55,7 @@ watch(classId, load);
         <PlantGrowth :growth="week.total / WATER_RULES.fullBloom.week" class="h-28 w-24 shrink-0" />
         <div class="flex flex-col gap-1">
           <span class="text-sm text-muted-foreground">
-            {{ selected?.name ?? 'Your class' }} this week
+            {{ t('home.thisWeek', { name: selected?.name ?? t('home.yourClass') }) }}
           </span>
           <span class="flex items-center gap-2 text-3xl font-bold text-water tabular-nums">
             <DropletIcon class="size-6" aria-hidden="true" />
@@ -71,13 +67,13 @@ watch(classId, load);
             class="flex items-center gap-1 text-sm font-medium text-primary"
           >
             <TimerIcon class="size-4" aria-hidden="true" />
-            Silent phase running
+            {{ t('home.silentPhaseRunning') }}
           </RouterLink>
         </div>
       </CardContent>
     </Card>
 
-    <nav aria-label="Pages">
+    <nav :aria-label="t('home.pages')">
       <ul class="grid gap-3 sm:grid-cols-2">
         <li v-for="page in pages" :key="page.to">
           <RouterLink

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { computed, reactive, ref } from 'vue';
+import { I18nT, useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useClassesStore } from '@/stores/classes';
 
+const { t } = useI18n();
 const store = useClassesStore();
 const { classes, plants, error } = storeToRefs(store);
 void store.load();
@@ -38,7 +40,7 @@ async function run(action: () => Promise<unknown>, done: string) {
     await action();
     toast.success(done);
   } catch (e) {
-    toast.error(e instanceof Error ? e.message : 'Something went wrong');
+    toast.error(e instanceof Error ? e.message : t('errors.generic'));
   } finally {
     busy.value = false;
   }
@@ -47,14 +49,14 @@ async function run(action: () => Promise<unknown>, done: string) {
 async function addClass() {
   const name = newClass.value.trim();
   if (!name) return;
-  await run(() => store.createClass(name), `Added ${name}`);
+  await run(() => store.createClass(name), t('classes.added', { name }));
   newClass.value = '';
 }
 
 async function addPlant() {
   const name = newPlant.value.trim();
   if (!name) return;
-  await run(() => store.createPlant(name), `Added ${name}`);
+  await run(() => store.createPlant(name), t('classes.added', { name }));
   newPlant.value = '';
 }
 
@@ -62,22 +64,19 @@ function connect(plantId: string) {
   const classId = picked[plantId];
   if (!classId) return;
   const name = classById.value.get(classId)?.name;
-  void run(() => store.assign(plantId, classId), `Connected to ${name}`);
+  void run(() => store.assign(plantId, classId), t('classes.connected', { name }));
 }
 
 function disconnect(plantId: string) {
-  void run(() => store.disconnect(plantId), 'Disconnected');
+  void run(() => store.disconnect(plantId), t('classes.disconnected'));
 }
 </script>
 
 <template>
   <div class="flex flex-col gap-4">
     <div>
-      <h1 class="text-2xl font-semibold">Classes and plants</h1>
-      <p class="text-sm text-muted-foreground">
-        Each class has one plant. Readings count for the class the plant belongs to when they
-        arrive.
-      </p>
+      <h1 class="text-2xl font-semibold">{{ t('classes.title') }}</h1>
+      <p class="text-sm text-muted-foreground">{{ t('classes.intro') }}</p>
     </div>
 
     <p
@@ -91,12 +90,12 @@ function disconnect(plantId: string) {
     <div class="grid gap-4 md:grid-cols-2 md:items-start">
       <Card>
         <CardHeader>
-          <CardTitle>Classes</CardTitle>
+          <CardTitle>{{ t('classes.classes') }}</CardTitle>
         </CardHeader>
         <CardContent class="flex flex-col gap-4">
           <Skeleton v-if="!classes && !error" class="h-24 w-full" />
           <p v-else-if="classes && !classes.length" class="text-sm text-muted-foreground">
-            No classes yet.
+            {{ t('classes.noClasses') }}
           </p>
           <ul v-if="classes?.length" class="flex flex-col divide-y">
             <li
@@ -106,17 +105,22 @@ function disconnect(plantId: string) {
             >
               <span class="font-medium">{{ c.name }}</span>
               <Badge v-if="c.plantId" variant="secondary">
-                {{ plantById.get(c.plantId)?.name ?? 'Unnamed plant' }}
+                {{ plantById.get(c.plantId)?.name ?? t('classes.unnamedPlant') }}
               </Badge>
-              <Badge v-else variant="outline">No plant</Badge>
+              <Badge v-else variant="outline">{{ t('classes.noPlant') }}</Badge>
             </li>
           </ul>
           <form class="flex flex-col gap-2" @submit.prevent="addClass">
-            <Label for="new-class">New class</Label>
+            <Label for="new-class">{{ t('classes.newClass') }}</Label>
             <div class="flex gap-2">
-              <Input id="new-class" v-model="newClass" placeholder="e.g. 7b" class="min-h-11" />
+              <Input
+                id="new-class"
+                v-model="newClass"
+                :placeholder="t('classes.newClassPlaceholder')"
+                class="min-h-11"
+              />
               <Button type="submit" class="min-h-11" :disabled="busy || !newClass.trim()">
-                Add
+                {{ t('classes.add') }}
               </Button>
             </div>
           </form>
@@ -125,15 +129,17 @@ function disconnect(plantId: string) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Plants</CardTitle>
+          <CardTitle>{{ t('classes.plants') }}</CardTitle>
           <CardDescription>
-            A plant sends its id as <code>plantId</code> with every reading.
+            <I18nT keypath="classes.plantsHint" scope="global">
+              <template #field><code>plantId</code></template>
+            </I18nT>
           </CardDescription>
         </CardHeader>
         <CardContent class="flex flex-col gap-4">
           <Skeleton v-if="!plants && !error" class="h-24 w-full" />
           <p v-else-if="plants && !plants.length" class="text-sm text-muted-foreground">
-            No plants yet.
+            {{ t('classes.noPlants') }}
           </p>
           <ul v-if="plants?.length" class="flex flex-col divide-y">
             <li v-for="p in plants" :key="p.id" class="flex flex-col gap-2 py-3">
@@ -142,25 +148,29 @@ function disconnect(plantId: string) {
                 <code class="text-xs break-all text-muted-foreground select-all">{{ p.id }}</code>
               </div>
               <div v-if="p.classId" class="flex items-center justify-between gap-2">
-                <span class="text-sm">
-                  Class <strong>{{ classById.get(p.classId)?.name ?? 'unknown' }}</strong>
-                </span>
+                <I18nT keypath="classes.plantClass" tag="span" scope="global" class="text-sm">
+                  <template #name>
+                    <strong>{{
+                      classById.get(p.classId)?.name ?? t('classes.unknownClass')
+                    }}</strong>
+                  </template>
+                </I18nT>
                 <Button
                   variant="outline"
                   class="min-h-11 md:min-h-9"
                   :disabled="busy"
                   @click="disconnect(p.id)"
                 >
-                  Disconnect
+                  {{ t('classes.disconnect') }}
                 </Button>
               </div>
               <div v-else-if="freeClasses.length" class="flex gap-2">
                 <Select v-model="picked[p.id]">
                   <SelectTrigger
                     class="min-h-11 flex-1 md:min-h-9"
-                    :aria-label="`Class for ${p.name}`"
+                    :aria-label="t('classes.classFor', { name: p.name })"
                   >
-                    <SelectValue placeholder="Pick a class" />
+                    <SelectValue :placeholder="t('classPicker.placeholder')" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem v-for="c in freeClasses" :key="c.id" :value="c.id">
@@ -173,25 +183,25 @@ function disconnect(plantId: string) {
                   :disabled="busy || !picked[p.id]"
                   @click="connect(p.id)"
                 >
-                  Connect
+                  {{ t('classes.connect') }}
                 </Button>
               </div>
               <p v-else class="text-sm text-muted-foreground">
-                Every class has a plant. Disconnect one first.
+                {{ t('classes.allAssigned') }}
               </p>
             </li>
           </ul>
           <form class="flex flex-col gap-2" @submit.prevent="addPlant">
-            <Label for="new-plant">New plant</Label>
+            <Label for="new-plant">{{ t('classes.newPlant') }}</Label>
             <div class="flex gap-2">
               <Input
                 id="new-plant"
                 v-model="newPlant"
-                placeholder="e.g. Fern by the window"
+                :placeholder="t('classes.newPlantPlaceholder')"
                 class="min-h-11"
               />
               <Button type="submit" class="min-h-11" :disabled="busy || !newPlant.trim()">
-                Add
+                {{ t('classes.add') }}
               </Button>
             </div>
           </form>

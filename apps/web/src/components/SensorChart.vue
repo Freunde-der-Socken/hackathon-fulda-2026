@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useElementSize } from '@vueuse/core';
 import { computed, ref, useTemplateRef } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   gapThreshold,
   niceTicks,
@@ -52,14 +53,11 @@ const y = (v: number) => {
 };
 const clampY = (v: number) => Math.min(M.top + PLOT_H, Math.max(M.top, y(v)));
 
-const compact = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 });
-const precise = new Intl.NumberFormat('en', { maximumFractionDigits: 1 });
-const time = (t: number, seconds = false) =>
-  new Date(t).toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-    ...(seconds && { second: '2-digit' }),
-  });
+// `t` is a timestamp throughout this file
+const { t: translate, d, n } = useI18n();
+const compact = (value: number) => n(value, 'compact');
+const precise = (value: number) => n(value, 'precise');
+const time = (ms: number, seconds = false) => d(ms, seconds ? 'timeSeconds' : 'time');
 
 const MINUTE = 60_000;
 const TIME_STEPS = [1, 2, 5, 10, 15, 30, 60, 120, 180, 360, 720, 1440].map((m) => m * MINUTE);
@@ -191,7 +189,7 @@ const tooltipStyle = computed(() => {
             stroke="var(--border)"
           />
           <text :x="M.left - 6" :y="y(tick)" text-anchor="end" dominant-baseline="middle">
-            {{ compact.format(tick) }}
+            {{ compact(tick) }}
           </text>
         </template>
         <text v-for="tick in xTicks" :key="tick" :x="x(tick)" :y="HEIGHT - 6" text-anchor="middle">
@@ -271,7 +269,7 @@ const tooltipStyle = computed(() => {
         class="text-xs font-medium tabular-nums"
         fill="var(--foreground)"
       >
-        {{ precise.format(e.value) }}
+        {{ precise(e.value) }}
       </text>
     </svg>
 
@@ -284,10 +282,12 @@ const tooltipStyle = computed(() => {
       <div v-for="r in readout" :key="r.id" class="flex items-center gap-2 whitespace-nowrap">
         <span class="h-0.5 w-3 rounded-full" :style="{ background: r.color }" />
         <span class="font-semibold tabular-nums">
-          {{ precise.format(r.point.value) }} {{ unitLabel(unit) }}
+          {{ precise(r.point.value) }} {{ unitLabel(unit) }}
         </span>
         <span class="text-muted-foreground">{{ r.id }}</span>
-        <span v-if="r.point.outlier" class="text-muted-foreground">· likely a failed read</span>
+        <span v-if="r.point.outlier" class="text-muted-foreground">
+          · {{ translate('sensors.failedRead') }}
+        </span>
       </div>
     </div>
   </div>

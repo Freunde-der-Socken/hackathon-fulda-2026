@@ -13,6 +13,7 @@ import { useLocalStorage } from '@vueuse/core';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { apiDelete, apiGet, apiPost, apiPut } from '@/lib/api';
+import { i18n } from '@/lib/i18n';
 
 /**
  * Classes, plants and the class the teacher is looking at. Every class-specific page (sensors,
@@ -43,7 +44,7 @@ export const useClassesStore = defineStore('classes', () => {
       plants.value = plantList.items;
       error.value = undefined;
     } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Loading the classes failed';
+      error.value = e instanceof Error ? e.message : i18n.global.t('errors.loadClasses');
     }
   }
 
