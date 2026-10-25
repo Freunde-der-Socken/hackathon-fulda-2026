@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "workMode": {
+      "type": "string",
+      "enum": [
+        "silent",
+        "discussion",
+        "group"
+      ]
+    }
+  },
+  "required": [
+    "workMode"
+  ],
+  "additionalProperties": false,
+  "title": "SetWorkModeBody"
+}

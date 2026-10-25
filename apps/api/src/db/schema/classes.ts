@@ -5,5 +5,7 @@ import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 export const classes = pgTable('classes', {
   id: uuid().primaryKey().defaultRandom(),
   name: text().notNull(),
+  // WorkMode from @repo/contracts. Sets the dB range of the noise score.
+  workMode: text().notNull().default('silent'),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 });

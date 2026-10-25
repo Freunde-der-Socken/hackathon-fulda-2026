@@ -22,6 +22,14 @@
         }
       ]
     },
+    "workMode": {
+      "type": "string",
+      "enum": [
+        "silent",
+        "discussion",
+        "group"
+      ]
+    },
     "createdAt": {
       "type": "string",
       "format": "date-time",
@@ -32,6 +40,7 @@
     "id",
     "name",
     "plantId",
+    "workMode",
     "createdAt"
   ],
   "additionalProperties": false,

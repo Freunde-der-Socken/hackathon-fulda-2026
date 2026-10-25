@@ -1,0 +1,2 @@
+ALTER TABLE "classes" ADD COLUMN "work_mode" text DEFAULT 'silent' NOT NULL;--> statement-breakpoint
+CREATE INDEX "sensor_readings_class_id_received_at_index" ON "sensor_readings" USING btree ("class_id","received_at");

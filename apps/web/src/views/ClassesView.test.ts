@@ -25,8 +25,14 @@ describe('ClassesView', () => {
         return url.endsWith('/classes')
           ? respond({
               items: [
-                { id: DEMO_CLASS_ID, name: 'Demo class', plantId: DEMO_PLANT_ID, createdAt },
-                { id: SPARE_CLASS, name: '7b', plantId: null, createdAt },
+                {
+                  id: DEMO_CLASS_ID,
+                  name: 'Demo class',
+                  plantId: DEMO_PLANT_ID,
+                  workMode: 'silent',
+                  createdAt,
+                },
+                { id: SPARE_CLASS, name: '7b', plantId: null, workMode: 'silent', createdAt },
               ],
             })
           : respond({

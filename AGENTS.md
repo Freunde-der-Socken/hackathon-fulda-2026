@@ -15,7 +15,7 @@ A prototype classroom mascot: a physical plant (ESP32 with DHT11, LDR, LED ring 
 
 ## Where things go
 
-- **Schemas and types used by both sides**: `packages/contracts/src/<domain>.ts`, exported from `index.ts`. Zod only, hand-written (not derived from DB tables), dates as ISO strings. Hardware talks to the API over REST too, and the API sends to the plant ESP32's own HTTP server, so device payloads in both directions are ordinary contract schemas.
+- **Schemas and types used by both sides**: `packages/contracts/src/<domain>.ts`, exported from `index.ts`. Zod only, hand-written (not derived from DB tables), dates as ISO strings. Hardware talks to the API over REST too, and the plant polls the API for its noise score instead of running its own server (decision 1 in `docs/concept.md`), so device payloads are ordinary contract schemas.
 - **API**: routes in `apps/api/src/routes` as `FastifyPluginAsyncZod` using contract schemas for `querystring`, `params`, `body` and `response`. Registered in `routes/index.ts` under `/api`. Plugins in `plugins/`. Database schema in `src/db/schema`, migrations in `apps/api/drizzle` (generate with `db:generate`, never edit by hand). Errors are `ErrorResponse`. No `console.*`: use `app.log` / `request.log`.
 - **R&D / ML**: TensorFlow.js with the WASM backend (CPU fallback), never `@tensorflow/tfjs-node` (no Node 24 or arm64 support). Model I/O helpers go in `packages/ml`, experiments in `apps/rnd`. Keep the `@tensorflow/*` versions identical via the catalog. Details in `apps/rnd/README.md`.
 - **Optional services**: `app.db` exists only when `DATABASE_URL` is set. Guard with `app.hasDecorator('db')`.
