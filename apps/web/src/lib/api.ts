@@ -1,4 +1,5 @@
 import type { z } from 'zod';
+import { i18n } from '@/lib/i18n';
 
 export const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
@@ -35,7 +36,8 @@ async function request<T extends z.ZodType>(
       (json: { message?: unknown }) => (typeof json.message === 'string' ? json.message : ''),
       () => '',
     );
-    throw new ApiError(res.status, `${method} ${path} failed: ${res.status} ${detail}`.trim());
+    const message = i18n.global.t('errors.request', { method, path, status: res.status });
+    throw new ApiError(res.status, `${message} ${detail}`.trim());
   }
   // A malformed response throws a ZodError here instead of failing silently later
   return response.parse(await res.json());
