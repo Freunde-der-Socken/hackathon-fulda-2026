@@ -61,6 +61,7 @@ In measuring mode the stalk follows the **noise score**, a whole number from 1 (
 | Stillarbeit (`silent`, default)    | 40 dB          | 55 dB            |
 | Unterrichtsgespräch (`discussion`) | 50 dB          | 60 dB            |
 | Gruppenarbeit (`group`)            | 60 dB          | 80 dB            |
+| Test (`test`)                      | 30 dB          | 90 dB            |
 
 Between the two values the score is linear. The plant polls `GET /api/plants/:id/noise-score` every second, and the API works out the score in two steps:
 
