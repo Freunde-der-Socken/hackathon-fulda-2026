@@ -34,6 +34,8 @@ services:
       NODE_ENV: production
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost}
       DATABASE_URL: postgres://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.prod}@postgres:5432/${POSTGRES_DB:-app}
+      # Empty counts as unset, then nothing is sent to the watering can
+      WATERING_CAN_URL: ${WATERING_CAN_URL:-}
     depends_on:
       postgres:
         condition: service_healthy

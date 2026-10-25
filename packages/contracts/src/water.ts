@@ -66,3 +66,17 @@ export const WaterSummary = z.object({
   activeSilentPhase: SilentPhase.nullable(),
 });
 export type WaterSummary = z.infer<typeof WaterSummary>;
+
+/**
+ * Body of `POST /water` on the watering can's own HTTP server. The API sends it whenever a class
+ * earns water, so the can's display stays current.
+ *
+ * PLACEHOLDER until the hardware team decides (YouTrack GREEN-42): the fields, the unit and range
+ * of the level on the display, and how a can is matched to a class. `total` is all water of the
+ * class so far, like `GET /api/classes/:id/water` without `from`.
+ */
+export const WateringCanUpdate = z.object({
+  classId: Id,
+  total: z.number().int().nonnegative(),
+});
+export type WateringCanUpdate = z.infer<typeof WateringCanUpdate>;

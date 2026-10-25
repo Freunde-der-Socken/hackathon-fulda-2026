@@ -7,6 +7,8 @@ const Env = z.object({
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   DATABASE_URL: z.url().optional(),
+  // Base URL of the watering can's HTTP server, e.g. http://192.168.1.50. Unset sends nothing.
+  WATERING_CAN_URL: z.url().optional(),
 });
 export type Env = z.infer<typeof Env>;
 

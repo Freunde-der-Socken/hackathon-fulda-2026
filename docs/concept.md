@@ -28,6 +28,7 @@ flowchart LR
   phone["Phone<br/>/noise page"] -- "POST /api/sensor-data" --> api
   web["Teacher web app"] <--> api
   api -- "HTTP to the ESP32's own server<br/>(mode, LED ring, stalk)" --> plant
+  api -- "POST /water<br/>(water total)" --> can["Watering can ESP32<br/>display"]
 ```
 
 Every payload, including the one the API sends to the ESP32, is a schema in `@repo/contracts`.
