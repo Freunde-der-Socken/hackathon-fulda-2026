@@ -2,6 +2,7 @@ import { DEMO_CLASS_ID, DEMO_PLANT_ID } from '@repo/contracts';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useClassesStore } from '@/stores/classes';
 import ClassesView from './ClassesView.vue';
 
 const createdAt = '2026-10-24T10:00:00.000Z';
@@ -17,8 +18,11 @@ describe('ClassesView', () => {
     setActivePinia(createPinia());
     vi.stubGlobal(
       'fetch',
-      vi.fn((url: string) =>
-        url.endsWith('/classes')
+      vi.fn((url: string, init?: RequestInit) => {
+        if (init?.method === 'PUT' || init?.method === 'DELETE') {
+          return respond({ id: SPARE_PLANT, name: 'Fern', classId: null, createdAt });
+        }
+        return url.endsWith('/classes')
           ? respond({
               items: [
                 { id: DEMO_CLASS_ID, name: 'Demo class', plantId: DEMO_PLANT_ID, createdAt },
@@ -30,22 +34,37 @@ describe('ClassesView', () => {
                 { id: DEMO_PLANT_ID, name: 'Demo plant', classId: DEMO_CLASS_ID, createdAt },
                 { id: SPARE_PLANT, name: 'Fern', classId: null, createdAt },
               ],
-            }),
-      ),
+            });
+      }),
     );
   });
   afterEach(() => vi.unstubAllGlobals());
 
-  it('lists classes and plants with their assignment', async () => {
+  it('shows each class with its plant and lists the free plants', async () => {
     const wrapper = mount(ClassesView);
     await flushPromises();
-    const text = wrapper.text();
-    expect(text).toContain('Demo class');
-    expect(text).toContain('No plant');
-    expect(text).toContain(SPARE_PLANT);
-    // The connected plant can be disconnected, the spare one connected
-    const buttons = wrapper.findAll('button').map((b) => b.text());
-    expect(buttons).toContain('Disconnect');
-    expect(buttons).toContain('Connect');
+    const rows = wrapper.findAll('li').map((li) => li.text());
+    expect(rows[0]).toContain('Demo class');
+    expect(rows[0]).toContain('Demo plant');
+    expect(rows[1]).toContain('7b');
+    expect(rows[1]).toContain('Pick a plant');
+    // The free plant offers its id for the ESP32 instead of printing it
+    expect(rows[2]).toContain('Fern');
+    expect(rows[2]).toContain('Copy id');
+    expect(wrapper.text()).not.toContain(SPARE_PLANT);
+  });
+
+  it('frees the class before connecting another plant to it', async () => {
+    const store = useClassesStore();
+    await store.load();
+    await store.assign(SPARE_PLANT, DEMO_CLASS_ID);
+    const writes = vi
+      .mocked(fetch)
+      .mock.calls.filter(([, init]) => init?.method && init.method !== 'GET')
+      .map(([url, init]) => `${init?.method} ${String(url)}`);
+    expect(writes).toEqual([
+      `DELETE /api/plants/${DEMO_PLANT_ID}/class`,
+      `PUT /api/plants/${SPARE_PLANT}/class`,
+    ]);
   });
 });
