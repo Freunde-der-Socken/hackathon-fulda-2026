@@ -18,17 +18,21 @@ export interface SensorGroup {
   series: Series[];
 }
 
-const TITLES: Record<string, string> = {
-  C: 'Temperature',
-  '°C': 'Temperature',
-  '%': 'Humidity',
-  adc: 'Light (LDR)',
-  lx: 'Light',
-  dB: 'Noise',
-  dBFS: 'Noise',
+/** What a unit measures. The title is `sensors.kinds.<kind>` in the locale messages. */
+export type SensorKind = 'temperature' | 'humidity' | 'lightRaw' | 'light' | 'noise';
+
+const KINDS: Record<string, SensorKind> = {
+  C: 'temperature',
+  '°C': 'temperature',
+  '%': 'humidity',
+  adc: 'lightRaw',
+  lx: 'light',
+  dB: 'noise',
+  dBFS: 'noise',
 };
 
-export const groupTitle = (unit: string) => TITLES[unit] ?? (unit || 'No unit');
+/** Undefined for units we don't know, which are shown by their unit instead. */
+export const sensorKind = (unit: string): SensorKind | undefined => KINDS[unit];
 
 /** Unit as shown next to a value. */
 export const unitLabel = (unit: string) => (unit === 'C' ? '°C' : unit === 'adc' ? 'raw' : unit);
@@ -92,18 +96,23 @@ export function groupReadings(readings: SensorReading[]): SensorGroup[] {
     bySensor.set(r.sensorId, points);
     points.push({ t: Date.parse(r.recordedAt), value: isAdc ? adcToLux(r.value) : r.value });
   }
-  return [...byUnit]
-    .map(([unit, bySensor]) => ({
-      unit,
-      series: [...bySensor]
-        .map(([sensorId, raw]) => {
-          raw.sort((a, b) => a.t - b.t);
-          const outliers = markOutliers(raw.map((p) => p.value));
-          return { sensorId, points: raw.map((p, i) => ({ ...p, outlier: outliers[i]! })) };
-        })
-        .toSorted((a, b) => a.sensorId.localeCompare(b.sensorId)),
-    }))
-    .toSorted((a, b) => groupTitle(a.unit).localeCompare(groupTitle(b.unit)));
+  return (
+    [...byUnit]
+      .map(([unit, bySensor]) => ({
+        unit,
+        series: [...bySensor]
+          .map(([sensorId, raw]) => {
+            raw.sort((a, b) => a.t - b.t);
+            const outliers = markOutliers(raw.map((p) => p.value));
+            return { sensorId, points: raw.map((p, i) => ({ ...p, outlier: outliers[i]! })) };
+          })
+          .toSorted((a, b) => a.sensorId.localeCompare(b.sensorId)),
+      }))
+      // Same order in every language, so the charts don't jump when it changes
+      .toSorted((a, b) =>
+        (sensorKind(a.unit) ?? a.unit).localeCompare(sensorKind(b.unit) ?? b.unit),
+      )
+  );
 }
 
 /** Pause after which the line breaks instead of bridging the gap. */

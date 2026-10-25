@@ -1,11 +1,21 @@
 <script setup lang="ts">
-import { MenuIcon, MoonIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, SunIcon } from '@lucide/vue';
+import {
+  LanguagesIcon,
+  MenuIcon,
+  MoonIcon,
+  PanelLeftCloseIcon,
+  PanelLeftOpenIcon,
+  SunIcon,
+} from '@lucide/vue';
 import { useDark, useLocalStorage, useToggle } from '@vueuse/core';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
+import LanguageMenu from '@/components/LanguageMenu.vue';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Toaster } from '@/components/ui/sonner';
+import { isLocale, LOCALE_NAMES } from '@/lib/i18n';
 import { navItems } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 
@@ -21,6 +31,8 @@ const isDark = useDark();
 const toggleDark = useToggle(isDark);
 
 const route = useRoute();
+const { t, locale } = useI18n();
+const localeName = computed(() => (isLocale(locale.value) ? LOCALE_NAMES[locale.value] : ''));
 
 const linkClass =
   'flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground';
@@ -44,33 +56,33 @@ const activeClass = 'bg-accent text-accent-foreground';
           variant="ghost"
           size="icon"
           class="size-11 shrink-0"
-          :aria-label="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+          :aria-label="collapsed ? t('layout.expandSidebar') : t('layout.collapseSidebar')"
           @click="collapsed = !collapsed"
         >
           <PanelLeftOpenIcon v-if="collapsed" />
           <PanelLeftCloseIcon v-else />
         </Button>
       </div>
-      <nav class="flex flex-col gap-1 p-2" aria-label="Main">
+      <nav class="flex flex-col gap-1 p-2" :aria-label="t('layout.main')">
         <template v-for="item in navItems" :key="item.to">
           <a
             v-if="item.external"
             :href="item.to"
             :class="cn(linkClass, collapsed && 'justify-center px-0')"
-            :title="item.label"
+            :title="t(`nav.${item.id}`)"
           >
             <component :is="item.icon" class="size-5 shrink-0" />
-            <span v-if="!collapsed">{{ item.label }}</span>
+            <span v-if="!collapsed">{{ t(`nav.${item.id}`) }}</span>
           </a>
           <RouterLink
             v-else
             :to="item.to"
             :class="cn(linkClass, collapsed && 'justify-center px-0')"
             :active-class="activeClass"
-            :title="item.label"
+            :title="t(`nav.${item.id}`)"
           >
             <component :is="item.icon" class="size-5 shrink-0" />
-            <span v-if="!collapsed">{{ item.label }}</span>
+            <span v-if="!collapsed">{{ t(`nav.${item.id}`) }}</span>
           </RouterLink>
         </template>
       </nav>
@@ -78,13 +90,23 @@ const activeClass = 'bg-accent text-accent-foreground';
         <button
           type="button"
           :class="cn(linkClass, 'w-full', collapsed && 'justify-center px-0')"
-          :title="isDark ? 'Light mode' : 'Dark mode'"
+          :title="isDark ? t('layout.lightMode') : t('layout.darkMode')"
           @click="toggleDark()"
         >
           <SunIcon v-if="isDark" class="size-5 shrink-0" />
           <MoonIcon v-else class="size-5 shrink-0" />
-          <span v-if="!collapsed">{{ isDark ? 'Light mode' : 'Dark mode' }}</span>
+          <span v-if="!collapsed">{{ isDark ? t('layout.lightMode') : t('layout.darkMode') }}</span>
         </button>
+        <LanguageMenu side="right" align="end">
+          <button
+            type="button"
+            :class="cn(linkClass, 'w-full', collapsed && 'justify-center px-0')"
+            :title="t('layout.language')"
+          >
+            <LanguagesIcon class="size-5 shrink-0" />
+            <span v-if="!collapsed">{{ localeName }}</span>
+          </button>
+        </LanguageMenu>
       </div>
     </aside>
 
@@ -93,11 +115,21 @@ const activeClass = 'bg-accent text-accent-foreground';
       class="sticky top-0 z-10 flex h-14 shrink-0 items-center border-b bg-card px-4 pt-[env(safe-area-inset-top)] box-content md:hidden"
     >
       <span class="font-semibold">{{ APP_NAME }}</span>
+      <LanguageMenu align="end">
+        <Button
+          variant="ghost"
+          size="icon"
+          class="ml-auto size-11"
+          :aria-label="t('layout.language')"
+        >
+          <LanguagesIcon />
+        </Button>
+      </LanguageMenu>
       <Button
         variant="ghost"
         size="icon"
-        class="-mr-2 ml-auto size-11"
-        :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+        class="-mr-2 size-11"
+        :aria-label="isDark ? t('layout.switchToLight') : t('layout.switchToDark')"
         @click="toggleDark()"
       >
         <SunIcon v-if="isDark" />
@@ -117,7 +149,7 @@ const activeClass = 'bg-accent text-accent-foreground';
     <!-- Phone: bottom tab bar -->
     <nav
       class="fixed inset-x-0 bottom-0 z-10 flex border-t bg-card pb-[env(safe-area-inset-bottom)] md:hidden"
-      aria-label="Main"
+      :aria-label="t('layout.main')"
     >
       <RouterLink
         v-for="item in primaryItems"
@@ -127,7 +159,7 @@ const activeClass = 'bg-accent text-accent-foreground';
         active-class="text-primary"
       >
         <component :is="item.icon" class="size-5" />
-        {{ item.label }}
+        {{ t(`nav.${item.id}`) }}
       </RouterLink>
 
       <Sheet v-if="secondaryItems.length">
@@ -137,22 +169,22 @@ const activeClass = 'bg-accent text-accent-foreground';
             class="flex min-h-14 min-w-11 flex-1 flex-col items-center justify-center gap-0.5 text-xs font-medium text-muted-foreground"
           >
             <MenuIcon class="size-5" />
-            More
+            {{ t('layout.more') }}
           </button>
         </SheetTrigger>
         <SheetContent side="bottom" class="pb-[env(safe-area-inset-bottom)]">
           <SheetHeader>
-            <SheetTitle>More</SheetTitle>
+            <SheetTitle>{{ t('layout.more') }}</SheetTitle>
           </SheetHeader>
-          <nav class="flex flex-col gap-1 p-4 pt-0" aria-label="More">
+          <nav class="flex flex-col gap-1 p-4 pt-0" :aria-label="t('layout.more')">
             <template v-for="item in secondaryItems" :key="item.to">
               <a v-if="item.external" :href="item.to" :class="linkClass">
                 <component :is="item.icon" class="size-5" />
-                {{ item.label }}
+                {{ t(`nav.${item.id}`) }}
               </a>
               <RouterLink v-else :to="item.to" :class="linkClass" :active-class="activeClass">
                 <component :is="item.icon" class="size-5" />
-                {{ item.label }}
+                {{ t(`nav.${item.id}`) }}
               </RouterLink>
             </template>
           </nav>

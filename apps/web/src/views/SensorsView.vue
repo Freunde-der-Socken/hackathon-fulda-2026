@@ -3,22 +3,25 @@ import { type SensorReading, SensorReadingList } from '@repo/contracts';
 import { useIntervalFn, useLocalStorage } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
+import { I18nT, useI18n } from 'vue-i18n';
 import ClassPicker from '@/components/ClassPicker.vue';
 import SensorChart from '@/components/SensorChart.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { apiGet } from '@/lib/api';
-import { groupReadings, groupTitle, unitLabel } from '@/lib/sensor-series';
+import { groupReadings, sensorKind, unitLabel } from '@/lib/sensor-series';
 import { useClassesStore } from '@/stores/classes';
 
 const REFRESH_MS = 5000;
 const RANGES = [
-  { id: '15m', label: '15 min', ms: 15 * 60_000 },
-  { id: '1h', label: '1 h', ms: 60 * 60_000 },
-  { id: 'all', label: 'All', ms: Infinity },
+  { id: '15m', label: 'sensors.minutes', count: 15, ms: 15 * 60_000 },
+  { id: '1h', label: 'sensors.hours', count: 1, ms: 60 * 60_000 },
+  { id: 'all', label: 'sensors.all', count: 0, ms: Infinity },
 ] as const;
 const SERIES_COLORS = 8;
+
+const { t, d, n } = useI18n();
 
 const readings = ref<SensorReading[]>();
 const error = ref<string>();
@@ -36,7 +39,7 @@ async function load() {
     readings.value = list.items;
     error.value = undefined;
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Loading the sensor data failed';
+    error.value = e instanceof Error ? e.message : t('errors.loadSensors');
   }
 }
 useIntervalFn(load, REFRESH_MS, { immediateCallback: true });
@@ -80,6 +83,12 @@ watch(classId, () => {
   void load();
 });
 
+const groupTitle = (unit: string) => {
+  const kind = sensorKind(unit);
+  return kind ? t(`sensors.kinds.${kind}`) : unit || t('sensors.noUnit');
+};
+const readingsLabel = (count: number) => t('sensors.readings', { count: n(count) }, count);
+
 const cards = computed(() =>
   groups.value.map((g) => {
     const series = g.series.map((s) => ({
@@ -88,8 +97,8 @@ const cards = computed(() =>
       points: s.points,
       latest: s.points.at(-1),
     }));
-    const count = series.reduce((n, s) => n + s.points.length, 0);
-    const outliers = series.reduce((n, s) => n + s.points.filter((p) => p.outlier).length, 0);
+    const count = series.reduce((sum, s) => sum + s.points.length, 0);
+    const outliers = series.reduce((sum, s) => sum + s.points.filter((p) => p.outlier).length, 0);
     const rows = series
       .flatMap((s) => s.points.map((p) => ({ ...p, sensorId: s.id })))
       .toSorted((a, b) => b.t - a.t);
@@ -97,14 +106,14 @@ const cards = computed(() =>
   }),
 );
 
-const precise = new Intl.NumberFormat('en', { maximumFractionDigits: 1 });
-const time = (t: number) => new Date(t).toLocaleTimeString();
+const time = (ms: number) => d(ms, 'timeSeconds');
+const precise = (value: number) => n(value, 'precise');
 </script>
 
 <template>
   <div class="flex flex-col gap-4">
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <h1 class="text-2xl font-semibold">Sensors</h1>
+      <h1 class="text-2xl font-semibold">{{ t('sensors.title') }}</h1>
       <ClassPicker />
     </div>
 
@@ -113,16 +122,16 @@ const time = (t: number) => new Date(t).toLocaleTimeString();
         type="single"
         variant="outline"
         :model-value="range"
-        aria-label="Time range"
+        :aria-label="t('sensors.timeRange')"
         @update:model-value="setRange"
       >
         <ToggleGroupItem v-for="r in RANGES" :key="r.id" :value="r.id" class="min-h-11 md:min-h-9">
-          {{ r.label }}
+          {{ t(r.label, { count: r.count }) }}
         </ToggleGroupItem>
       </ToggleGroup>
       <label class="flex min-h-11 items-center gap-2">
         <input v-model="showOutliers" type="checkbox" class="size-5 accent-primary" />
-        Show outliers
+        {{ t('sensors.showOutliers') }}
       </label>
     </div>
 
@@ -138,20 +147,25 @@ const time = (t: number) => new Date(t).toLocaleTimeString();
       <Skeleton v-for="i in 3" :key="i" class="h-72 w-full" />
     </template>
 
-    <p v-else-if="readings && !cards.length" class="text-sm text-muted-foreground">
-      No sensor data for this class yet. Its plant and the noise page send it to
-      <code>POST /api/sensor-data</code>.
-    </p>
+    <I18nT
+      v-else-if="readings && !cards.length"
+      keypath="sensors.empty"
+      tag="p"
+      scope="global"
+      class="text-sm text-muted-foreground"
+    >
+      <template #endpoint><code>POST /api/sensor-data</code></template>
+    </I18nT>
 
     <div class="flex flex-col gap-4">
       <Card v-for="card in cards" :key="card.unit">
         <CardHeader>
           <CardTitle>{{ card.title }}</CardTitle>
           <CardDescription>
-            {{ unitLabel(card.unit) || 'no unit' }} · {{ card.count }} readings
+            {{ unitLabel(card.unit) || t('sensors.noUnit') }} · {{ readingsLabel(card.count) }}
             <template v-if="card.outliers">
-              · {{ card.outliers }} {{ card.outliers === 1 ? 'outlier' : 'outliers' }}
-              {{ showOutliers ? 'included' : 'marked at the edge (likely failed reads)' }}
+              · {{ t('sensors.outliers', { count: n(card.outliers) }, card.outliers) }}
+              {{ showOutliers ? t('sensors.outliersIncluded') : t('sensors.outliersMarked') }}
             </template>
           </CardDescription>
         </CardHeader>
@@ -168,13 +182,13 @@ const time = (t: number) => new Date(t).toLocaleTimeString();
                 {{ s.id }}
               </span>
               <span v-if="s.latest" class="text-2xl font-semibold">
-                {{ precise.format(s.latest.value) }}
+                {{ precise(s.latest.value) }}
                 <span class="text-base font-normal text-muted-foreground">
                   {{ unitLabel(card.unit) }}
                 </span>
               </span>
               <span v-if="s.latest" class="text-xs text-muted-foreground">
-                at {{ time(s.latest.t) }}
+                {{ t('sensors.latestAt', { time: time(s.latest.t) }) }}
               </span>
             </li>
           </ul>
@@ -184,21 +198,23 @@ const time = (t: number) => new Date(t).toLocaleTimeString();
             :unit="card.unit"
             :x-domain="xDomain"
             :show-outliers="showOutliers"
-            :label="`${card.title} over time, ${card.count} readings. Use the table for exact values.`"
+            :label="
+              t('sensors.chartLabel', { title: card.title, readings: readingsLabel(card.count) })
+            "
           />
 
           <details class="text-sm">
             <summary class="min-h-11 cursor-pointer content-center text-muted-foreground">
-              Show table
+              {{ t('sensors.showTable') }}
             </summary>
             <div class="max-h-64 overflow-auto rounded-md border">
               <table class="w-full text-left tabular-nums">
                 <thead class="sticky top-0 bg-card text-muted-foreground">
                   <tr>
-                    <th class="px-3 py-1.5 font-medium">Time</th>
-                    <th class="px-3 py-1.5 font-medium">Sensor</th>
+                    <th class="px-3 py-1.5 font-medium">{{ t('sensors.time') }}</th>
+                    <th class="px-3 py-1.5 font-medium">{{ t('sensors.sensor') }}</th>
                     <th class="px-3 py-1.5 text-right font-medium">
-                      Value ({{ unitLabel(card.unit) }})
+                      {{ t('sensors.value', { unit: unitLabel(card.unit) }) }}
                     </th>
                   </tr>
                 </thead>
@@ -207,8 +223,10 @@ const time = (t: number) => new Date(t).toLocaleTimeString();
                     <td class="px-3 py-1">{{ time(row.t) }}</td>
                     <td class="px-3 py-1">{{ row.sensorId }}</td>
                     <td class="px-3 py-1 text-right">
-                      {{ precise.format(row.value) }}
-                      <span v-if="row.outlier" class="text-muted-foreground">(outlier)</span>
+                      {{ precise(row.value) }}
+                      <span v-if="row.outlier" class="text-muted-foreground">
+                        {{ t('sensors.outlier') }}
+                      </span>
                     </td>
                   </tr>
                 </tbody>

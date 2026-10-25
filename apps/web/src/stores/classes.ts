@@ -13,6 +13,7 @@ import { useLocalStorage } from '@vueuse/core';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { apiDelete, apiGet, apiPost, apiPut } from '@/lib/api';
+import { i18n } from '@/lib/i18n';
 
 /**
  * Classes, plants and the class the teacher is looking at. Every class-specific page (sensors,
@@ -43,7 +44,7 @@ export const useClassesStore = defineStore('classes', () => {
       plants.value = plantList.items;
       error.value = undefined;
     } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Loading the classes failed';
+      error.value = e instanceof Error ? e.message : i18n.global.t('errors.loadClasses');
     }
   }
 
@@ -63,9 +64,21 @@ export const useClassesStore = defineStore('classes', () => {
     return created;
   }
 
+  /**
+   * Connects a plant to a class, moving it away from its old class and freeing the class's old plant
+   * first, since the API only connects free pairs. Not atomic: if a step fails, both may end up free.
+   */
   async function assign(plantId: string, classId: string) {
-    await apiPut(`/plants/${plantId}/class`, AssignPlantBody, { classId }, Plant);
-    await load();
+    const oldClass = plants.value?.find((p) => p.id === plantId)?.classId;
+    const oldPlant = classes.value?.find((c) => c.id === classId)?.plantId;
+    if (oldClass === classId) return;
+    try {
+      if (oldClass) await apiDelete(`/plants/${plantId}/class`, Plant);
+      if (oldPlant) await apiDelete(`/plants/${oldPlant}/class`, Plant);
+      await apiPut(`/plants/${plantId}/class`, AssignPlantBody, { classId }, Plant);
+    } finally {
+      await load();
+    }
   }
 
   async function disconnect(plantId: string) {
