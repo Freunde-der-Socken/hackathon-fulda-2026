@@ -1,8 +1,13 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
+#include <HTTPClient.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_GC9A01A.h>
+#include <WiFi.h>
+#include <ArduinoJson.h>
+
+
 
 // GC9A01 SPI Display Pins (Header 1)
 #define TFT_SCLK  20
@@ -16,6 +21,14 @@
 #define I2C_SCL   3
 
 Adafruit_GC9A01A tft(&SPI, TFT_DC, TFT_CS, TFT_RST);
+
+const char* ssid     = "Hackathon";
+const char* password = "Hackathon2026";
+const char* serverUrl = "http://10.247.10.129:80/api";   // no trailing slash
+const char* plantId = "6f1c0b6e-2a4d-4c43-9a8e-0d6a2f1b7c11";
+
+unsigned long lastSendTime = 0;
+const unsigned long sendInterval = 5000;   // ms
 
 // Geometry & Colors
 const int CENTER_X = 120;
@@ -176,6 +189,37 @@ void renderWater(float gx, float gy, float level) {
   tft.endWrite();
 }
 
+void sendSingleSensor(const char* sensorId, float value, const char* unit) {
+  HTTPClient http;
+  String url = String(serverUrl) + "/sensor-data"; 
+  http.begin(url);
+  http.addHeader("Content-Type", "application/json");
+  // Explicitly tell the Pi server to close the socket after responding
+  http.addHeader("Connection", "close");
+  
+  // 3000ms gives the Pi and Hackathon Wi-Fi enough time to respond
+  http.setTimeout(3000);
+
+  JsonDocument doc;
+  doc["plantId"]  = plantId;
+  doc["sensorId"] = sensorId;
+  doc["value"]    = value;
+  doc["unit"]     = unit;
+
+  String jsonPayload;
+  serializeJson(doc, jsonPayload);
+  Serial.printf("Sending data for %s: %s\n", sensorId, jsonPayload.c_str());
+
+  int httpCode = http.POST(jsonPayload);
+  if (httpCode <= 0) {
+    Serial.printf("POST [%s] failed (%d): %s\n", sensorId, httpCode, http.errorToString(httpCode).c_str());
+  } else {
+    Serial.printf("POST [%s] success (HTTP %d)\n", sensorId, httpCode);
+  }
+  http.end();
+
+}
+
 void setup() {
   Serial.begin(115200);
   delay(1500);
@@ -277,6 +321,12 @@ void loop() {
   } else if (tiltAngle < 15.0f && waterLevel < MAX_LEVEL) {
     waterLevel += 0.004f;
     if (waterLevel > MAX_LEVEL) waterLevel = MAX_LEVEL;
+  }
+
+  // Send sensor data
+  if (millis() - lastSendTime > sendInterval) {
+    lastSendTime = millis();
+    sendSingleSensor("waterLevel", waterLevel, "fraction");
   }
 
   // Draw simulation frame
