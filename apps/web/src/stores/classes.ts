@@ -8,6 +8,8 @@ import {
   type SchoolClass,
   SchoolClass as SchoolClassSchema,
   SchoolClassList,
+  SetWorkModeBody,
+  type WorkMode,
 } from '@repo/contracts';
 import { useLocalStorage } from '@vueuse/core';
 import { defineStore } from 'pinia';
@@ -86,6 +88,18 @@ export const useClassesStore = defineStore('classes', () => {
     await load();
   }
 
+  /** Swaps in the class the API returns, so the slider doesn't wait for a full reload. */
+  async function setWorkMode(classId: string, workMode: WorkMode) {
+    const updated = await apiPut(
+      `/classes/${classId}/work-mode`,
+      SetWorkModeBody,
+      { workMode },
+      SchoolClassSchema,
+    );
+    classes.value = classes.value?.map((c) => (c.id === updated.id ? updated : c));
+    return updated;
+  }
+
   return {
     classes,
     plants,
@@ -98,5 +112,6 @@ export const useClassesStore = defineStore('classes', () => {
     createPlant,
     assign,
     disconnect,
+    setWorkMode,
   };
 });

@@ -15,6 +15,7 @@ import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import { z } from 'zod';
 import ClassPicker from '@/components/ClassPicker.vue';
+import WorkModeSlider from '@/components/WorkModeSlider.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -152,6 +153,8 @@ const SOURCES = {
         </dl>
       </CardContent>
     </Card>
+
+    <WorkModeSlider />
 
     <div class="grid gap-4 md:grid-cols-2 md:items-start">
       <Card>

@@ -69,6 +69,17 @@ export default {
     noNoiseReadings: 'No noise readings during the phase, so no water. Is the noise page on?',
     phaseResult: 'Quiet {percent} % of the time: +{water} water',
     awarded: '+{amount} water',
+    workMode: 'Work mode',
+    workModeHint:
+      'Sets how loud the class may be. The louder it gets, the more the plant draws in.',
+    workModeMax: 'The plant is fully drawn in at {db} dB.',
+    workModeSaved: 'Work mode: {mode}',
+    dbRange: '{minDb}–{maxDb} dB',
+    modes: {
+      silent: 'Silent work',
+      discussion: 'Class discussion',
+      group: 'Group work',
+    },
   },
   review: {
     title: 'Review',
