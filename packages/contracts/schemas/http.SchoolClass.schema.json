@@ -27,7 +27,8 @@
       "enum": [
         "silent",
         "discussion",
-        "group"
+        "group",
+        "test"
       ]
     },
     "createdAt": {
